@@ -21,7 +21,7 @@ public class ContrastToolWindow : EditorWindow
           1, 2, 1 };
 
     private Camera mainCamera;
-    private float Threshold = 0.4f;
+    private float Threshold = 0f;
 
     [MenuItem("Window/Contrast Analysis")]
     public static void ShowWindow()
@@ -134,11 +134,12 @@ public class ContrastToolWindow : EditorWindow
             values[i] = GetLuminocity(pixels[i]);
         }
 
+        // Do these blurs even work?
         // perform normal blur
-        //values = PerformBlur(values, kernal, true);
+        values = PerformBlur(values, kernal, true);
 
         // perform gausian blur
-        //values = PerformBlur(values, kernal, false);
+        values = PerformBlur(values, kernal, false);
 
         // perform Sobel operation
         texture.SetPixels(SobelOperation(pixels, values, kernal));
@@ -236,11 +237,11 @@ public class ContrastToolWindow : EditorWindow
 
                 Vector2 Result = new Vector2(X_Result, Y_Result);
                 float ResultAngle = Vector2.Angle(Vector2.up, Result);
-                if (Result.x < -1f) ResultAngle += 180f;
+                if (Result.x < 0f) ResultAngle = 360f - ResultAngle;
 
                 // get hue angle
                 Hue = ResultAngle / 360f;
-                Debug.Log("Hue Angle: " + Hue);
+                // Debug.Log("Hue Angle: " + Hue);
 
                 // replace pixel with new color
                 image[i] = Color.HSVToRGB(Hue, 1f, Value);
