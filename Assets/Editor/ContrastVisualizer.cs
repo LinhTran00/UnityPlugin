@@ -1,14 +1,23 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEngine.UI;
-using Unity.VisualScripting;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 
 public class ContrastToolWindow : EditorWindow
 {
-    private bool ToolActive = false;
+    private bool isAnalyzing = false;
     private float InEditorOpacity = 1f;
+
+    private RenderTexture renderTexture;
+    private Texture2D simulatedTexture;
+
+    float[] normalWeights =
+        { 1, 1, 1,
+          1, 1, 1,
+          1, 1, 1 };
+    float[] gausianWeights =
+        { 1, 2, 1,
+          2, 4, 2,
+          1, 2, 1 };
 
     private Shader ContrastShader;
     [SerializeField] private Camera mainCamera;
@@ -17,7 +26,6 @@ public class ContrastToolWindow : EditorWindow
     public static void ShowWindow()
     {
         EditorWindow.GetWindow(typeof(ContrastToolWindow));
-        
     }
 
     private void OnGUI()
@@ -26,23 +34,57 @@ public class ContrastToolWindow : EditorWindow
 
         mainCamera = EditorGUILayout.ObjectField("Main Camera", mainCamera, typeof(Camera), true) as Camera;
 
-        // On Off Toggle
-        if ( GUILayout.Button("Toggle Contrast Visualization"))
+        // a lot of this UI is admittedly copied from Linh's code
+        EditorGUI.BeginDisabledGroup(isAnalyzing);
+        if ( GUILayout.Button("Capture Contrast Visualization"))
         {
             StartAnalysis();
         }
+        EditorGUI.EndDisabledGroup();
 
-        GUILayout.BeginHorizontal();
-
-        GUILayout.Label("Shader Opacity");
-        InEditorOpacity = GUILayout.HorizontalSlider(InEditorOpacity, 0f, 1f);
-
-        GUILayout.EndHorizontal();
+        if (simulatedTexture != null)
+        {
+            GUILayout.Label("Simulated View");
+            GUILayout.Label(simulatedTexture, GUILayout.Width(position.width), GUILayout.Height(position.height - 100));
+        }
     }
 
+    // ripped directly from ColorBlindnessSimulationWindow
     private void StartAnalysis()
     {
+        if (mainCamera == null)
+        {
+            Debug.LogError("Main Camera is not assigned.");
+            return;
+        }
 
+        // Create a RenderTexture with the same dimensions as the screen
+        renderTexture = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+        mainCamera.targetTexture = renderTexture;
+
+        isAnalyzing = true;
+        EditorApplication.update += AnalyzeFrame;
+    }
+
+    private void AnalyzeFrame()
+    {
+        mainCamera.Render();
+        RenderTexture.active = renderTexture;
+
+        // Read pixels from the RenderTexture and apply color blindness simulation
+        if (simulatedTexture == null)
+        {
+            simulatedTexture = new Texture2D(renderTexture.width, renderTexture.height);
+        }
+        simulatedTexture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        simulatedTexture.Apply();
+        ApplyAnalysis(simulatedTexture);
+
+        RenderTexture.active = null;
+        EditorApplication.update -= AnalyzeFrame;
+
+        isAnalyzing = false;
+        Repaint();
     }
 
     private void ApplyAnalysis(Texture2D texture)
@@ -86,14 +128,6 @@ public class ContrastToolWindow : EditorWindow
     private float[] PerformBlur(float[] values, int[] kernal, bool isNormal)
     {
         float[] returnValues = new float[values.Length];
-        float[] normalWeights =
-            { 1, 1, 1,
-              1, 1, 1,
-              1, 1, 1 };
-        float[] gausianWeights =
-            { 1, 2, 1,
-              2, 4, 2,
-              1, 2, 1 };
 
         // perform blur
         for (int i = 0; i < values.Length; i++)
