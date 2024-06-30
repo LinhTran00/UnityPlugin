@@ -5,6 +5,7 @@ using System.Linq;
 public class ContrastToolWindow : EditorWindow
 {
     private bool isAnalyzing = false;
+    private bool useColor = false;
     private float InEditorOpacity = 1f;
 
     private RenderTexture renderTexture;
@@ -19,8 +20,8 @@ public class ContrastToolWindow : EditorWindow
           2, 4, 2,
           1, 2, 1 };
 
-    private Shader ContrastShader;
-    [SerializeField] private Camera mainCamera;
+    private Camera mainCamera;
+    private float Threshold = 0.4f;
 
     [MenuItem("Window/Contrast Analysis")]
     public static void ShowWindow()
@@ -40,7 +41,21 @@ public class ContrastToolWindow : EditorWindow
         {
             StartAnalysis();
         }
+
+        if (GUILayout.Button("Turn " + (useColor? "Off" : "On") +" Direction Coloring"))
+        {
+            useColor = !useColor;
+            if (simulatedTexture != null)
+                StartAnalysis();
+            else
+                Repaint();
+        }
         EditorGUI.EndDisabledGroup();
+
+        if (GUILayout.Button("Reset Simulation"))
+        {
+            ResetWindow();
+        }
 
         if (simulatedTexture != null)
         {
@@ -64,6 +79,20 @@ public class ContrastToolWindow : EditorWindow
 
         isAnalyzing = true;
         EditorApplication.update += AnalyzeFrame;
+    }
+    private void ResetWindow()
+    {
+        if (mainCamera != null)
+        {
+            mainCamera.targetTexture = null;
+        }
+
+        renderTexture?.Release();
+        renderTexture = null;
+
+        simulatedTexture = null;
+
+        Repaint();
     }
 
     private void AnalyzeFrame()
@@ -106,13 +135,13 @@ public class ContrastToolWindow : EditorWindow
         }
 
         // perform normal blur
-        values = PerformBlur(values, kernal, true);
+        //values = PerformBlur(values, kernal, true);
 
         // perform gausian blur
-        values = PerformBlur(values, kernal, false);
+        //values = PerformBlur(values, kernal, false);
 
         // perform Sobel operation
-        texture.SetPixels(SobelOperation(pixels, values, kernal, true));
+        texture.SetPixels(SobelOperation(pixels, values, kernal));
         texture.Apply();
     }
 
@@ -153,7 +182,7 @@ public class ContrastToolWindow : EditorWindow
         return returnValues;
     }
 
-    private Color[] SobelOperation(Color[] image, float[] values, int[] kernal, bool colorDirection)
+    private Color[] SobelOperation(Color[] image, float[] values, int[] kernal)
     {
         // get separate values for x and y axes
         // allows for atan(Y/X) for direction of edge
@@ -195,15 +224,23 @@ public class ContrastToolWindow : EditorWindow
             float Value =  Mathf.Sqrt(Mathf.Pow(X_Total + Y_Total, 2) * Mathf.Pow(X_Weight + Y_Weight, 2));
             float Hue = 0f;
 
+            // deal with Threshold
+            if (Value < Threshold) Value = 0f;
+
             // calculate new value at pixel
-            if (colorDirection)
+            if (useColor && Value >= Threshold)
             {
                 // get value of each axis independently
                 float X_Result = X_Total / X_Weight;
                 float Y_Result = Y_Total / Y_Weight;
 
+                Vector2 Result = new Vector2(X_Result, Y_Result);
+                float ResultAngle = Vector2.Angle(Vector2.up, Result);
+                if (Result.x < -1f) ResultAngle += 180f;
+
                 // get hue angle
-                Hue = Mathf.Lerp(Mathf.Atan(Y_Result / X_Result), 0f, 2 * Mathf.PI);
+                Hue = ResultAngle / 360f;
+                Debug.Log("Hue Angle: " + Hue);
 
                 // replace pixel with new color
                 image[i] = Color.HSVToRGB(Hue, 1f, Value);
