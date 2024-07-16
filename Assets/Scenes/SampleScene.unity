@@ -188,8 +188,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4290493502
+  m_fontColor: {r: 0.24313723, g: 0.7372549, b: 0.73251635, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -206,8 +206,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 8
+  m_fontSizeBase: 8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -387,9 +387,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f343ed65cabdc174b8b5c61449acafef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraToCapture: {fileID: 330585545}
-  screenshotFolder: Screenshots
-  screenshotPrefix: Screenshot
 --- !u!4 &250599151
 Transform:
   m_ObjectHideFlags: 0
@@ -555,6 +552,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91056a0693007a141a4a636e7fabcce4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Type: 3
+  colorblindShader: {fileID: 4800000, guid: b35b8f7ae8cf168488129d5f5f39ebf4, type: 3}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,7 +679,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blue (Instance) (Instance) (Instance)
+  m_Name: Blue (Instance) (Instance) (Instance) (Instance) (Instance) (Instance)
+    (Instance) (Instance)
   m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0

@@ -1,9 +1,0 @@
-Object: Plane, Position: (0.00, 0.00, 0.00), Material/Color: Blue
-Object: Cube, Position: (0.00, 0.00, 0.00), Material/Color: Red
-Object: Text (TMP), Position: (237.00, 133.40, 0.00), Material/Color: No Material
-    Text: text
-    Font Size: 36
-    Font Size Check: Pass
-Object: Canvas, Position: (237.00, 133.40, 0.00), Material/Color: No Material
-Average Brightness: 0.34225
-Suggestion: The game is moderately dark. This might be suitable for atmospheric settings, but ensure it is comfortable for players.
