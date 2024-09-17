@@ -4,7 +4,8 @@ using UnityEditor;
 public class BrightnessChecker
 {
     private Camera mainCamera;
-    private int sampleSize = 128; // Size of the sample texture
+    private int textureWidth = 256; // Width of the sample texture
+    private int textureHeight = 144; // Height of the sample texture
     private Texture2D screenTexture;
     private Texture2D adjustedTexture;
     private Color[] pixelColors;
@@ -19,16 +20,15 @@ public class BrightnessChecker
 
     private float brightnessFactor = 1.0f; // Factor to adjust the brightness
 
-    
     public void OnEnable()
     {
         mainCamera = Camera.main;
         if (mainCamera != null)
         {
-            screenTexture = new Texture2D(sampleSize, sampleSize, TextureFormat.RGB24, false);
-            adjustedTexture = new Texture2D(sampleSize, sampleSize, TextureFormat.RGB24, false);
-            pixelColors = new Color[sampleSize * sampleSize];
-            adjustedColors = new Color[sampleSize * sampleSize];
+            screenTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGB24, false);
+            adjustedTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGB24, false);
+            pixelColors = new Color[textureWidth * textureHeight];
+            adjustedColors = new Color[textureWidth * textureHeight];
         }
     }
 
@@ -87,6 +87,13 @@ public class BrightnessChecker
         // Calculate and display brightness information
         CaptureScreen();
         float brightness = CalculateAverageBrightness(screenTexture);
+
+        EditorGUILayout.BeginVertical();
+        GUILayout.Label("Original Image", labelStyle1, GUILayout.Height(20));
+        GUILayout.Box(screenTexture, GUILayout.Width(textureWidth), GUILayout.Height(textureHeight));
+        GUILayout.Label($"Brightness: {brightness.ToString("F2")}", textAreaStyle);
+        EditorGUILayout.EndVertical();
+
         PrintBrightnessSuggestion(brightness);
         GUILayout.Space(20);
 
@@ -100,23 +107,15 @@ public class BrightnessChecker
 
         // Calculate adjusted brightness
         float adjustedBrightness = CalculateAverageBrightness(adjustedTexture);
+        EditorGUILayout.BeginVertical();
 
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.BeginVertical();
-        GUILayout.Label("Original Image", labelStyle1, GUILayout.Height(20));
-        GUILayout.Box(screenTexture, GUILayout.Width(sampleSize), GUILayout.Height(sampleSize));
-        GUILayout.Label($"Brightness: {brightness.ToString("F2")}", textAreaStyle);
-        EditorGUILayout.EndVertical();
-        EditorGUILayout.BeginVertical();
         GUILayout.Label("Adjusted Image", labelStyle1, GUILayout.Height(20));
-        GUILayout.Box(adjustedTexture, GUILayout.Width(sampleSize), GUILayout.Height(sampleSize));
+        GUILayout.Box(adjustedTexture, GUILayout.Width(textureWidth), GUILayout.Height(textureHeight));
         GUILayout.Label($"Brightness: {adjustedBrightness.ToString("F2")}", textAreaStyle);
-        
+
         EditorGUILayout.EndVertical();
-        EditorGUILayout.EndHorizontal();
+
         PrintBrightnessSuggestion(adjustedBrightness);
-
-
     }
 
     private float CalculateAverageBrightness(Texture2D texture)
@@ -158,18 +157,17 @@ public class BrightnessChecker
             suggestion = "The game is very bright. Consider reducing the brightness to avoid potential eye strain for players.";
         }
 
-        // GUILayout.Label($"Average Brightness: {averageBrightness.ToString("F2")}", EditorStyles.wordWrappedLabel);
         GUILayout.Label($"Suggestion: {suggestion}", EditorStyles.wordWrappedLabel);
     }
 
     private void CaptureScreen()
     {
-        RenderTexture renderTexture = new RenderTexture(sampleSize, sampleSize, 24);
+        RenderTexture renderTexture = new RenderTexture(textureWidth, textureHeight, 24);
         mainCamera.targetTexture = renderTexture; // Set the render texture to the camera
         mainCamera.Render(); // Render the camera's view to the texture
 
         RenderTexture.active = renderTexture;
-        screenTexture.ReadPixels(new Rect(0, 0, sampleSize, sampleSize), 0, 0);
+        screenTexture.ReadPixels(new Rect(0, 0, textureWidth, textureHeight), 0, 0);
         screenTexture.Apply();
         RenderTexture.active = null;
         mainCamera.targetTexture = null; // Reset the camera's render texture

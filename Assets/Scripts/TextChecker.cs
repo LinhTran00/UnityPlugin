@@ -6,38 +6,43 @@ using UnityEngine.UI;
 
 public class TextChecker
 {
+    private Vector2 scrollPosition;
+
+    // Styles for GUI elements
     private GUIStyle wcagStyle;
     private GUIStyle passStyle;
     private GUIStyle failStyle;
     private GUIStyle headerStyle;
-    private Camera mainCamera;
-    private Vector2 scrollPosition;
+    private GUIStyle yellowStyle;
+    private GUIStyle cyanStyle;
+    private List<string> recommendedFonts = new List<string> { "Arial", "Verdana", "Tahoma", "Helvetica", "Roboto", "LiberationSans SDF" };
 
+    private Camera mainCamera;
     public void OnEnable()
     {
         mainCamera = Camera.main;
+        TryInitStyles();
     }
 
     public void OnGUI()
     {
-
+        GUILayout.Space(12);
         EditorGUILayout.BeginHorizontal();
-
+        GUILayout.Space(12);
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-        EditorGUILayout.BeginVertical(GUILayout.Width(250));
-        TryInitStyles();
-        EditorGUILayout.LabelField("Text Size Check", headerStyle, GUILayout.Height(24));
-        
+        EditorGUILayout.BeginVertical(GUILayout.Width(400));
+        EditorGUILayout.LabelField("Text Enhancer", headerStyle, GUILayout.Height(30));
 
-        CheckTextSizes(Camera.main);
+        // Perform checks and display results
+        CheckTextProperties(mainCamera);
 
         EditorGUILayout.EndVertical();
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndHorizontal();
     }
 
-    private void CheckTextSizes(Camera mainCamera)
+    private void CheckTextProperties(Camera mainCamera)
     {
         if (mainCamera == null)
         {
@@ -48,7 +53,6 @@ public class TextChecker
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(mainCamera);
         List<GameObject> visibleObjects = new List<GameObject>();
 
-        // Find all TMP_Text, TMP_InputField, Text, and Button components in the scene
         TMP_Text[] textMeshes = GameObject.FindObjectsOfType<TMP_Text>();
         TMP_InputField[] inputFields = GameObject.FindObjectsOfType<TMP_InputField>();
         Text[] uiTexts = GameObject.FindObjectsOfType<Text>();
@@ -77,108 +81,160 @@ public class TextChecker
             }
         }
 
-        DisplayTextSizes(visibleObjects);
+        DisplayTextProperties(visibleObjects);
     }
 
-    private void DisplayTextSizes(List<GameObject> visibleObjects)
+    private void DisplayTextProperties(List<GameObject> visibleObjects)
     {
-        DeviceType deviceType = GetDeviceType();
-
+        int count = 1;
         foreach (GameObject obj in visibleObjects)
         {
-            DisplayTextComponentInfo(obj, deviceType);
+            DisplayTextComponentInfo(obj, count);
+            count++;
         }
     }
 
-    private void DisplayTextComponentInfo(GameObject obj, DeviceType deviceType)
+    private void DisplayTextComponentInfo(GameObject obj, int count)
     {
         TMP_Text textMesh = obj.GetComponent<TMP_Text>();
+        if (yellowStyle == null)
+        {
+            yellowStyle = new GUIStyle(wcagStyle);
+            yellowStyle.normal.textColor = Color.yellow;
+            yellowStyle.wordWrap = true; // Enable word wrapping
+        }
+
+        if (cyanStyle == null)
+        {
+            cyanStyle = new GUIStyle(wcagStyle);
+            cyanStyle.normal.textColor = Color.cyan;
+            cyanStyle.wordWrap = true; // Enable word wrapping
+        }
+
         if (textMesh != null)
         {
-            EditorGUILayout.LabelField($"Object: {obj.name}", wcagStyle, GUILayout.Height(24));
-            EditorGUILayout.LabelField($"    Text: {textMesh.text}", wcagStyle, GUILayout.Height(24));
-            EditorGUILayout.LabelField($"    Font: {textMesh.font.name}, Size: {textMesh.fontSize}", wcagStyle, GUILayout.Height(24));
-            ValidateFontSize(textMesh.fontSize, deviceType);
+            EditorGUILayout.LabelField($"{count}. Text: {textMesh.text}", yellowStyle, GUILayout.Height(24));
+            EditorGUILayout.LabelField($"    Original Font: {textMesh.font.name}, Size: {textMesh.fontSize}", wcagStyle, GUILayout.Height(24));
+            ValidateFontSize(textMesh.fontSize);
+            ValidateFont(textMesh.font.name);
+            if (IsMultiline(textMesh.text))
+            {
+                ValidateLongTextProperties(textMesh.text, textMesh.lineSpacing);
+            }
         }
 
         TMP_InputField inputField = obj.GetComponent<TMP_InputField>();
         if (inputField != null)
         {
-            EditorGUILayout.LabelField($"Object: {obj.name}");
+            EditorGUILayout.LabelField($"{count}. Object: {obj.name}", yellowStyle, GUILayout.Height(24));
             EditorGUILayout.LabelField($"    InputField Text: {inputField.text}", wcagStyle, GUILayout.Height(24));
-            EditorGUILayout.LabelField($"    Font: {inputField.textComponent.font.name}, Size: {inputField.textComponent.fontSize}", wcagStyle, GUILayout.Height(24));
-            ValidateFontSize(inputField.textComponent.fontSize, deviceType);
-        }
-
-        TMP_Dropdown dropdown = obj.GetComponent<TMP_Dropdown>();
-        if (dropdown != null)
-        {
-            EditorGUILayout.LabelField($"Object: {obj.name}", wcagStyle, GUILayout.Height(24));
-            EditorGUILayout.LabelField($"    Dropdown Value: {dropdown.options[dropdown.value].text}", wcagStyle, GUILayout.Height(24));
+            EditorGUILayout.LabelField($"    Original Font: {inputField.textComponent.font.name}, Size: {inputField.textComponent.fontSize}", wcagStyle, GUILayout.Height(24));
+            ValidateFontSize(inputField.textComponent.fontSize);
+            ValidateFont(inputField.textComponent.font.name);
+            if (IsMultiline(inputField.text))
+            {
+                ValidateLongTextProperties(inputField.text, inputField.textComponent.lineSpacing);
+            }
         }
 
         Text uiText = obj.GetComponent<Text>();
         if (uiText != null)
         {
-            EditorGUILayout.LabelField($"Object: {obj.name}", wcagStyle, GUILayout.Height(24));
+            EditorGUILayout.LabelField($"{count}. Object: {obj.name}", yellowStyle, GUILayout.Height(24));
             EditorGUILayout.LabelField($"    UI Text: {uiText.text}", wcagStyle, GUILayout.Height(24));
-            EditorGUILayout.LabelField($"    Font: {uiText.font.name}, Size: {uiText.fontSize}", wcagStyle, GUILayout.Height(24));
-            ValidateFontSize(uiText.fontSize, deviceType);
+            EditorGUILayout.LabelField($"    Original Font: {uiText.font.name}, Size: {uiText.fontSize}", wcagStyle, GUILayout.Height(24));
+            ValidateFontSize(uiText.fontSize);
+            ValidateFont(uiText.font.name);
+            if (IsMultiline(uiText.text))
+            {
+                ValidateLongTextProperties(uiText.text, uiText.lineSpacing);
+            }
         }
     }
 
-    private void ValidateFontSize(float fontSize, DeviceType deviceType)
+    private bool IsMultiline(string text)
     {
-        bool isPass = false;
-        string suggestion = string.Empty;
+        return text.Contains("\n");
+    }
 
-        switch (deviceType)
-        {
-            case DeviceType.Mobile:
-                isPass = fontSize >= 12;
-                suggestion = isPass ? "Pass" : "Increase font size to at least 12.";
-                break;
-            case DeviceType.Tablet:
-                isPass = fontSize >= 15;
-                suggestion = isPass ? "Pass" : "Increase font size to at least 15.";
-                break;
-            case DeviceType.Desktop:
-                isPass = fontSize >= 16;
-                suggestion = isPass ? "Pass" : "Increase font size to at least 16.";
-                break;
-        }
+    private void ValidateFontSize(float fontSize)
+    {
+        bool isPass = fontSize >= 16; // Assuming desktop standard for simplicity
+        string suggestion = isPass ? "Pass" : "Increase font size to at least 16.";
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Font Size Check:", wcagStyle, GUILayout.Width(130), GUILayout.Height(18));
+        EditorGUILayout.LabelField("    Font Size Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
         GUIStyle style = isPass ? passStyle : failStyle;
         string resultText = isPass ? "Pass" : "Fail";
-        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(18));
+        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(20));
         EditorGUILayout.EndHorizontal();
 
         if (!isPass)
         {
-            EditorGUILayout.LabelField('*' + suggestion, wcagStyle, GUILayout.Width(500), GUILayout.Height(30));
+            EditorGUILayout.LabelField("          Suggestion:    " + suggestion, cyanStyle, GUILayout.Width(500), GUILayout.Height(30));
         }
     }
 
-    private DeviceType GetDeviceType()
+    private void ValidateFont(string fontName)
     {
-        float screenWidth = Screen.width;
-        float screenHeight = Screen.height;
+        bool isPass = recommendedFonts.Contains(fontName);
+        string suggestion = isPass ? "Pass" : "Consider using a more readable font like Arial, Verdana, or Roboto.";
 
-        if (screenWidth <= 800 && screenHeight <= 1280)
-            return DeviceType.Mobile;
-        else if (screenWidth <= 1280 && screenHeight <= 1920)
-            return DeviceType.Tablet;
-        else
-            return DeviceType.Desktop;
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("    Font Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
+        GUIStyle style = isPass ? passStyle : failStyle;
+        string resultText = isPass ? "Pass" : "Fail";
+        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(20));
+        EditorGUILayout.EndHorizontal();
+
+        if (!isPass)
+        {
+            EditorGUILayout.LabelField("          Suggestion:    " + suggestion, cyanStyle, GUILayout.Width(500), GUILayout.Height(30));
+        }
     }
 
-    private enum DeviceType
+    private void ValidateLongTextProperties(string text, float lineSpacing)
     {
-        Mobile,
-        Tablet,
-        Desktop
+        bool isMixedCase = !text.Equals(text.ToUpper()) && !text.Equals(text.ToLower());
+        bool isLineSpacingCorrect = lineSpacing >= 1.5f;
+        bool isCharactersPerLineCorrect = text.Length <= 70;
+
+        string caseSuggestion = isMixedCase ? "Pass" : "Avoid using all caps.";
+        string lineSpacingSuggestion = isLineSpacingCorrect ? "Pass" : "Increase line spacing to at least 1.5.";
+        string charPerLineSuggestion = isCharactersPerLineCorrect ? "Pass" : "Reduce characters per line to around 70.";
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("    Mixed Case Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
+        GUIStyle style = isMixedCase ? passStyle : failStyle;
+        string resultText = isMixedCase ? "Pass" : "Fail";
+        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(20));
+        EditorGUILayout.EndHorizontal();
+        if (!isMixedCase)
+        {
+            EditorGUILayout.LabelField("          Suggestion:    " + caseSuggestion, cyanStyle, GUILayout.Width(500), GUILayout.Height(30));
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("    Line Spacing Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
+        style = isLineSpacingCorrect ? passStyle : failStyle;
+        resultText = isLineSpacingCorrect ? "Pass" : "Fail";
+        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(18));
+        EditorGUILayout.EndHorizontal();
+        if (!isLineSpacingCorrect)
+        {
+            EditorGUILayout.LabelField("          Suggestion:    " + lineSpacingSuggestion, cyanStyle, GUILayout.Width(500), GUILayout.Height(30));
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("    Characters Per Line Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
+        style = isCharactersPerLineCorrect ? passStyle : failStyle;
+        resultText = isCharactersPerLineCorrect ? "Pass" : "Fail";
+        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(20));
+        EditorGUILayout.EndHorizontal();
+        if (!isCharactersPerLineCorrect)
+        {
+            EditorGUILayout.LabelField("          Suggestion:    " + charPerLineSuggestion, cyanStyle, GUILayout.Width(500), GUILayout.Height(30));
+        }
     }
 
     private void TryInitStyles()
@@ -204,8 +260,7 @@ public class TextChecker
         if (headerStyle == null)
         {
             headerStyle = new GUIStyle(EditorStyles.boldLabel);
-            headerStyle.alignment = TextAnchor.MiddleLeft;
-            headerStyle.fontSize = 18;
+            headerStyle.fontSize = 20;
         }
     }
 }

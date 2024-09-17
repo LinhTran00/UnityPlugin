@@ -55,7 +55,7 @@ public class demo : EditorWindow
 
     private void OnGUI()
     {
-        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","1", "2", "3", "4", "5", "6"/* Add tab names */ });
+        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","Color Contrast", "Text", "Colorblind", "Brightness", "Flash", "Language"/* Add tab names */ });
 
         switch (currentTab)
         {
