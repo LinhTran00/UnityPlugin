@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEditor;
 
-public class VolumeChecker
+public class VolumeCheck
 {
     public AudioMixer audioMixer;
     private string result;
