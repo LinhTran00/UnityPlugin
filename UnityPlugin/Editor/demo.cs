@@ -188,94 +188,92 @@ public class demo : EditorWindow
         );
 
         // text check (font, size, color contrast)
-        if (textChecker.textExist)
+        foreach (TextProperties textProperty in textChecker.textPropertiesList)
         {
-            foreach (TextProperties textProperty in textChecker.textPropertiesList)
+            bool passFont = textChecker.recommendedFonts.Contains(textProperty.fontName);
+            bool passSize = textProperty.fontSize >= 16;
+            // Join recommended fonts and enclose in quotes
+            // Create a string of recommended fonts
+            string recommendedFonts = string.Join(", ", textChecker.recommendedFonts.Take(textChecker.recommendedFonts.Count - 1));
+
+            // Handle the last font separately if there are any recommended fonts
+            if (textChecker.recommendedFonts.Count > 0)
             {
-                bool passFont = textChecker.recommendedFonts.Contains(textProperty.fontName);
-                bool passSize = textProperty.fontSize >= 16;
-                // Join recommended fonts and enclose in quotes
-                // Create a string of recommended fonts
-                string recommendedFonts = string.Join(", ", textChecker.recommendedFonts.Take(textChecker.recommendedFonts.Count - 1));
+                recommendedFonts += " and " + textChecker.recommendedFonts.Last();
+            }
 
-                // Handle the last font separately if there are any recommended fonts
-                if (textChecker.recommendedFonts.Count > 0)
-                {
-                    recommendedFonts += " and " + textChecker.recommendedFonts.Last();
-                }
-
-                // Font check for each text object
-                csv_content += AddReportRow
-                (
-                    $"Font ({textProperty.content})",
-                    textProperty.fontName,
-                    passFont ? "Pass" : "Fail",
-                    passFont ? $"\"Use:\n{recommendedFonts}\"" : $"\"Not Use:\n{recommendedFonts}\"",
-                    passFont ? "" : $"\"Use:\n{recommendedFonts}\""
-                );
+            // Font check for each text object
+            csv_content += AddReportRow
+            (
+                $"Font ({textProperty.content})",
+                textProperty.fontName,
+                passFont ? "Pass" : "Fail",
+                passFont ? $"\"Use:\n{recommendedFonts}\"" : $"\"Not Use:\n{recommendedFonts}\"",
+                passFont ? "" : $"\"Use:\n{recommendedFonts}\""
+            );
 
 
 
-                // Font size check for each text object
-                csv_content += AddReportRow
-                (
-                    $"Font Size ({textProperty.content})", 
-                    textProperty.fontSize.ToString("0.00"), 
-                    passSize ? "Pass" : "Fail", 
-                    passSize ? ">16" : "<16", 
-                    passSize ? "" : "Increase font size to at least 16"
-                );
+            // Font size check for each text object
+            csv_content += AddReportRow
+            (
+                $"Font Size ({textProperty.content})", 
+                textProperty.fontSize.ToString("0.00"), 
+                passSize ? "Pass" : "Fail", 
+                passSize ? ">16" : "<16", 
+                passSize ? "" : "Increase font size to at least 16"
+            );
 
 
-                // Color contrast
-                string topass = "";
-                string tofail = "";
-                // WCAG AA
-                bool passCriteriaAA = textProperty.fontSize >= 18 && textProperty.contrastRatio >= 3.0;
-                bool failCriteriaAA = textProperty.fontSize >= 18 && textProperty.contrastRatio < 3.0;
-                // WCAG AAA
-                bool passCriteriaAAA = textProperty.fontSize >= 18 && textProperty.contrastRatio >= 4.5;
-                bool failCriteriaAAA = textProperty.fontSize >= 18 && textProperty.contrastRatio < 7.0;
+            // Color contrast
+            string topass = "";
+            string tofail = "";
+            // WCAG AA
+            bool passCriteriaAA = textProperty.fontSize >= 18 && textProperty.contrastRatio >= 3.0;
+            bool failCriteriaAA = textProperty.fontSize >= 18 && textProperty.contrastRatio < 3.0;
+            // WCAG AAA
+            bool passCriteriaAAA = textProperty.fontSize >= 18 && textProperty.contrastRatio >= 4.5;
+            bool failCriteriaAAA = textProperty.fontSize >= 18 && textProperty.contrastRatio < 7.0;
 
-                topass = passCriteriaAA
-                       ? "font size >= 18 & contrast ratio >= 3.0"
-                       : "font size < 18 & contrast ratio >= 4.5";
+            topass = passCriteriaAA
+                    ? "font size >= 18 & contrast ratio >= 3.0"
+                    : "font size < 18 & contrast ratio >= 4.5";
 
-                tofail = failCriteriaAA
-                       ? "font size >= 18 & contrast ratio < 3.0"
-                       : "font size < 18 & contrast ratio < 4.5";
+            tofail = failCriteriaAA
+                    ? "font size >= 18 & contrast ratio < 3.0"
+                    : "font size < 18 & contrast ratio < 4.5";
         
-                csv_content += AddReportRow
-                (
-                    $"WCAG AA ({textProperty.content})",
-                    $"\"contrast ratio: {textProperty.contrastRatio}\ntext size: {textProperty.fontSize}\"",
-                    //$"\"foreground: #{ColorUtility.ToHtmlStringRGB(textProperty.text)}\nbackground: #{ColorUtility.ToHtmlStringRGB(textProperty.background)}\ntext size: {textProperty.fontSize}\"",
-                    textChecker.wcagaa ? "Pass" : "Fail",
-                    textChecker.wcagaa && passCriteriaAA ? topass : tofail,
-                    textChecker.wcagaa ? "" : "increase font size or increase contrast ratio"
-                );
+            csv_content += AddReportRow
+            (
+                $"WCAG AA ({textProperty.content})",
+                $"\"contrast ratio: {textProperty.contrastRatio}\ntext size: {textProperty.fontSize}\"",
+                //$"\"foreground: #{ColorUtility.ToHtmlStringRGB(textProperty.text)}\nbackground: #{ColorUtility.ToHtmlStringRGB(textProperty.background)}\ntext size: {textProperty.fontSize}\"",
+                textChecker.wcagaa ? "Pass" : "Fail",
+                textChecker.wcagaa && passCriteriaAA ? topass : tofail,
+                textChecker.wcagaa ? "" : "increase font size or increase contrast ratio"
+            );
 
-                topass = passCriteriaAAA
-                       ? "font size >= 18 & contrast ratio >= 4.5"
-                       : "font size < 18 & contrast ratio >= 7.0";
+            topass = passCriteriaAAA
+                    ? "font size >= 18 & contrast ratio >= 4.5"
+                    : "font size < 18 & contrast ratio >= 7.0";
 
-                tofail = failCriteriaAAA
-                       ? "font size >= 18 & contrast ratio < 4.5"
-                       : "font size < 18 & contrast ratio < 7.0";
+            tofail = failCriteriaAAA
+                    ? "font size >= 18 & contrast ratio < 4.5"
+                    : "font size < 18 & contrast ratio < 7.0";
                 
-                csv_content += AddReportRow
-                (
-                    $"WCAG AAA ({textProperty.content})",
-                    $"\"contrast ratio: {textProperty.contrastRatio}\ntext size: {textProperty.fontSize}\"",
-                    //$"\"foreground: #{ColorUtility.ToHtmlStringRGB(textProperty.text)}\nbackground: #{ColorUtility.ToHtmlStringRGB(textProperty.background)}\ntext size: {textProperty.fontSize}\"",
-                    textChecker.wcagaaa ? "Pass" : "Fail",
-                    textChecker.wcagaaa && passCriteriaAAA ? topass : tofail,
-                    textChecker.wcagaaa ? "" : "increase font size or increase contrast ratio"
-                );
+            csv_content += AddReportRow
+            (
+                $"WCAG AAA ({textProperty.content})",
+                $"\"contrast ratio: {textProperty.contrastRatio}\ntext size: {textProperty.fontSize}\"",
+                //$"\"foreground: #{ColorUtility.ToHtmlStringRGB(textProperty.text)}\nbackground: #{ColorUtility.ToHtmlStringRGB(textProperty.background)}\ntext size: {textProperty.fontSize}\"",
+                textChecker.wcagaaa ? "Pass" : "Fail",
+                textChecker.wcagaaa && passCriteriaAAA ? topass : tofail,
+                textChecker.wcagaaa ? "" : "increase font size or increase contrast ratio"
+            );
 
                
-            }
         }
+        
 
         // brightness check
         csv_content += AddReportRow
