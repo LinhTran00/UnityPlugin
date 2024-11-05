@@ -4,6 +4,7 @@ using System.Xml.Serialization;
 using UnityEditor;
 using UnityEditor.ShaderGraph.Legacy;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class demo : EditorWindow
 {
@@ -18,8 +19,7 @@ public class demo : EditorWindow
         Tab6,
         Tab7,
         Tab8,
-        Tab9,
-        Tab10
+        Tab9
        
         // Add more tabs as needed
     }
@@ -73,7 +73,7 @@ public class demo : EditorWindow
     {
  
 
-        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","Report", "Color Contrast", "Text", "Colorblind", "Brightness", "Flash", "Language", "FoV", "Volume", "TTS"/* Add tab names */ });
+        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","Report", "Color Contrast", "Text", "Colorblind", "Brightness", "Flash", "Language", "FoV", "Volume"/* Add tab names */ });
 
         switch (currentTab)
         {
@@ -107,9 +107,6 @@ public class demo : EditorWindow
             case Tab.Tab9:
                 DrawTab9();
                 break;
-            case Tab.Tab10:
-                DrawTab10();
-                break;
             default:
                 break;
         }
@@ -128,9 +125,6 @@ public class demo : EditorWindow
         DrawTabDescription("4", "Brightness Check");
         DrawTabDescription("5", "Flash Check");
         DrawTabDescription("6", "Simple Language Check");
-        DrawTabDescription("7", "Field Of View");
-        DrawTabDescription("8", "Volume Check");
-        DrawTabDescription("9", "Text-to-speech");
         GUILayout.FlexibleSpace(); // Add flexible space to push content to the top
 
         // Optionally, add a footer or any additional content at the bottom of Tab0
@@ -167,23 +161,7 @@ public class demo : EditorWindow
     {
         volumeChecker.OnGUI();
     }
-    
-    private void DrawTab10()
-    {
-        GUILayout.Label("How to Use Text-To-Speech (TTS)", EditorStyles.boldLabel);
-        GUILayout.Space(10);
-        GUILayout.Label("1. Create an Amazon Polly account and get an access key and secret key.", EditorStyles.wordWrappedLabel);
-        GUILayout.Space(5);
-        GUILayout.Label("2. Copy and paste the keys into TextToSpeech.cs.", EditorStyles.wordWrappedLabel);
-        GUILayout.Space(5);
-        GUILayout.Label("3. Create a button in your Unity project.", EditorStyles.wordWrappedLabel);
-        GUILayout.Space(5);
-        GUILayout.Label("4. Click on the button -> Click 'Add Component' in the Inspector -> Choose 'HoverDetector'.", EditorStyles.wordWrappedLabel);
-        GUILayout.Space(5);
-        GUILayout.Label("5. Add a label in the 'Label To Speak' input field that you want a voiceover when the mouse hovers over it.", EditorStyles.wordWrappedLabel);
-        GUILayout.Space(5);
-        GUILayout.Label("6. Start the game and enjoy the voiceover functionality.", EditorStyles.wordWrappedLabel);
-    }
+
     private void Report()
     {
         string csv_content = "";
@@ -316,7 +294,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 90 degree or > 110 degree";
-                    suggestion = "In FPS games, FoV is typically between 90Â° to 110Â° for optimal player awareness and comfort.";
+                    suggestion = "In FPS games, FoV is typically between 90° to 110° for optimal player awareness and comfort.";
                 }
                 else
                 {
@@ -327,7 +305,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 60 degree or > 80 degree";
-                    suggestion = "Third-person games often use a FoV between 60Â° to 80Â°, providing balance between character visibility and spatial awareness.";
+                    suggestion = "Third-person games often use a FoV between 60° to 80°, providing balance between character visibility and spatial awareness.";
                 }
                 else
                 {
@@ -338,7 +316,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 75 degree or > 120 degree";
-                    suggestion = "For racing or simulation games, FoV ranges from 75Â° to 120Â° to simulate peripheral vision and immersion.";
+                    suggestion = "For racing or simulation games, FoV ranges from 75° to 120° to simulate peripheral vision and immersion.";
                 }
                 else
                 {
@@ -349,7 +327,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 90 degree or > 120 degree";
-                    suggestion = "In VR games, a FoV between 90Â° and 120Â° provides a realistic and comfortable experience.";
+                    suggestion = "In VR games, a FoV between 90° and 120° provides a realistic and comfortable experience.";
                 }
                 else
                 {
@@ -360,7 +338,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 60 degree or > 120 degree";
-                    suggestion = "For every game, extreme FoV ranges outside 60Â° to 120Â° are typically uncomfortable and can lead to visual distortion.";
+                    suggestion = "For every game, extreme FoV ranges outside 60° to 120° are typically uncomfortable and can lead to visual distortion.";
                 }
                 else
                 {
@@ -380,53 +358,52 @@ public class demo : EditorWindow
         );
 
         // volume
-        foreach (VolumeProperties volumeProperty in volumeChecker.volumePropertiesList)
-        {
-            // master volume
-            csv_content += AddReportRow
-            (   
-                "Master Volume",
-                $"{volumeProperty.masterVolume} dB",
-                volumeProperty.masterPass == 3 ? "Pass" : "Fail",
-                volumeProperty.masterPass == 1 ? "< -12 dB" :
-                volumeProperty.masterPass == 2 ? "> -6 dB" :
-                "-12 dB to -6 dB",
-                volumeProperty.masterSuggestion
-            );
-            // voice volume
-            csv_content += AddReportRow
-            (
-                "Voice Volume",
-                $"{volumeProperty.voiceVolume} dB",
-                volumeProperty.voicePass == 3 ? "Pass" : "Fail",
-                volumeProperty.voicePass == 1 ? "< -12 dB" :
-                volumeProperty.voicePass == 2 ? "> -6 dB" :
-                "-12 dB to -6 dB",
-                volumeProperty.voiceSuggestion
-            );
-            // music volume
-            csv_content += AddReportRow
-            (
-                "Music Volume",
-                $"{volumeProperty.musicVolume} dB",
-                volumeProperty.musicPass == 3 ? "Pass" : "Fail",
-                volumeProperty.musicPass == 1 ? "< -20 dB" :
-                volumeProperty.musicPass == 2 ? "> -12 dB" :
-                "-20 dB to -12 dB",
-                volumeProperty.musicSuggestion
-            );
-            // SFX volume
-            csv_content += AddReportRow
-            (
-                "SFX Volume",
-                $"{volumeProperty.sfxVolume} dB",
-                volumeProperty.sfxPass == 3 ? "Pass" : "Fail",
-                volumeProperty.sfxPass == 1 ? "< -12 dB" :
-                volumeProperty.sfxPass == 2 ? "> -3 dB" :
-                "-12 dB to -3 dB",
-                volumeProperty.sfxSuggestion
-            );
-        }
+        VolumeProperties volumeProperty = volumeChecker.volume;
+        // master volume
+        csv_content += AddReportRow
+        (   
+            "Master Volume",
+            $"{volumeProperty.masterVolume} dB",
+            volumeProperty.masterPass == 3 ? "Pass" : "Fail",
+            volumeProperty.masterPass == 1 ? "< -12 dB" :
+            volumeProperty.masterPass == 2 ? "> -6 dB" :
+            "-12 dB to -6 dB",
+            volumeProperty.masterSuggestion
+        );
+        // voice volume
+        csv_content += AddReportRow
+        (
+            "Voice Volume",
+            $"{volumeProperty.voiceVolume} dB",
+            volumeProperty.voicePass == 3 ? "Pass" : "Fail",
+            volumeProperty.voicePass == 1 ? "< -12 dB" :
+            volumeProperty.voicePass == 2 ? "> -6 dB" :
+            "-12 dB to -6 dB",
+            volumeProperty.voiceSuggestion
+        );
+        // music volume
+        csv_content += AddReportRow
+        (
+            "Music Volume",
+            $"{volumeProperty.musicVolume} dB",
+            volumeProperty.musicPass == 3 ? "Pass" : "Fail",
+            volumeProperty.musicPass == 1 ? "< -20 dB" :
+            volumeProperty.musicPass == 2 ? "> -12 dB" :
+            "-20 dB to -12 dB",
+            volumeProperty.musicSuggestion
+        );
+        // SFX volume
+        csv_content += AddReportRow
+        (
+            "SFX Volume",
+            $"{volumeProperty.sfxVolume} dB",
+            volumeProperty.sfxPass == 3 ? "Pass" : "Fail",
+            volumeProperty.sfxPass == 1 ? "< -12 dB" :
+            volumeProperty.sfxPass == 2 ? "> -3 dB" :
+            "-12 dB to -3 dB",
+            volumeProperty.sfxSuggestion
+        );
+
         GUILayout.EndVertical();
 
         // Text field for custom file name input

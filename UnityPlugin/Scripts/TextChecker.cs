@@ -60,7 +60,7 @@ public class TextChecker
     {
         TryInitStyles();
         GUILayout.Space(12);
-        EditorGUILayout.BeginHorizontal();
+                                                          
         GUILayout.Space(12);
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
