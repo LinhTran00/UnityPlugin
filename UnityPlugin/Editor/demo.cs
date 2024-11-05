@@ -18,7 +18,8 @@ public class demo : EditorWindow
         Tab6,
         Tab7,
         Tab8,
-        Tab9
+        Tab9,
+        Tab10
        
         // Add more tabs as needed
     }
@@ -72,7 +73,7 @@ public class demo : EditorWindow
     {
  
 
-        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","Report", "Color Contrast", "Text", "Colorblind", "Brightness", "Flash", "Language", "FoV", "Volume"/* Add tab names */ });
+        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","Report", "Color Contrast", "Text", "Colorblind", "Brightness", "Flash", "Language", "FoV", "Volume", "TTS"/* Add tab names */ });
 
         switch (currentTab)
         {
@@ -106,6 +107,9 @@ public class demo : EditorWindow
             case Tab.Tab9:
                 DrawTab9();
                 break;
+            case Tab.Tab10:
+                DrawTab10();
+                break;
             default:
                 break;
         }
@@ -124,6 +128,9 @@ public class demo : EditorWindow
         DrawTabDescription("4", "Brightness Check");
         DrawTabDescription("5", "Flash Check");
         DrawTabDescription("6", "Simple Language Check");
+        DrawTabDescription("7", "Field Of View");
+        DrawTabDescription("8", "Volume Check");
+        DrawTabDescription("9", "Text-to-speech");
         GUILayout.FlexibleSpace(); // Add flexible space to push content to the top
 
         // Optionally, add a footer or any additional content at the bottom of Tab0
@@ -160,7 +167,23 @@ public class demo : EditorWindow
     {
         volumeChecker.OnGUI();
     }
-
+    
+    private void DrawTab10()
+    {
+        GUILayout.Label("How to Use Text-To-Speech (TTS)", EditorStyles.boldLabel);
+        GUILayout.Space(10);
+        GUILayout.Label("1. Create an Amazon Polly account and get an access key and secret key.", EditorStyles.wordWrappedLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("2. Copy and paste the keys into TextToSpeech.cs.", EditorStyles.wordWrappedLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("3. Create a button in your Unity project.", EditorStyles.wordWrappedLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("4. Click on the button -> Click 'Add Component' in the Inspector -> Choose 'HoverDetector'.", EditorStyles.wordWrappedLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("5. Add a label in the 'Label To Speak' input field that you want a voiceover when the mouse hovers over it.", EditorStyles.wordWrappedLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("6. Start the game and enjoy the voiceover functionality.", EditorStyles.wordWrappedLabel);
+    }
     private void Report()
     {
         string csv_content = "";
@@ -293,7 +316,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 90 degree or > 110 degree";
-                    suggestion = "In FPS games, FoV is typically between 90° to 110° for optimal player awareness and comfort.";
+                    suggestion = "In FPS games, FoV is typically between 90Â° to 110Â° for optimal player awareness and comfort.";
                 }
                 else
                 {
@@ -304,7 +327,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 60 degree or > 80 degree";
-                    suggestion = "Third-person games often use a FoV between 60° to 80°, providing balance between character visibility and spatial awareness.";
+                    suggestion = "Third-person games often use a FoV between 60Â° to 80Â°, providing balance between character visibility and spatial awareness.";
                 }
                 else
                 {
@@ -315,7 +338,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 75 degree or > 120 degree";
-                    suggestion = "For racing or simulation games, FoV ranges from 75° to 120° to simulate peripheral vision and immersion.";
+                    suggestion = "For racing or simulation games, FoV ranges from 75Â° to 120Â° to simulate peripheral vision and immersion.";
                 }
                 else
                 {
@@ -326,7 +349,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 90 degree or > 120 degree";
-                    suggestion = "In VR games, a FoV between 90° and 120° provides a realistic and comfortable experience.";
+                    suggestion = "In VR games, a FoV between 90Â° and 120Â° provides a realistic and comfortable experience.";
                 }
                 else
                 {
@@ -337,7 +360,7 @@ public class demo : EditorWindow
                 if (fovChecker.isFail)
                 {
                     reason = "< 60 degree or > 120 degree";
-                    suggestion = "For every game, extreme FoV ranges outside 60° to 120° are typically uncomfortable and can lead to visual distortion.";
+                    suggestion = "For every game, extreme FoV ranges outside 60Â° to 120Â° are typically uncomfortable and can lead to visual distortion.";
                 }
                 else
                 {
