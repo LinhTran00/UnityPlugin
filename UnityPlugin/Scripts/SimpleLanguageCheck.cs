@@ -8,7 +8,7 @@ public class SimpleLanguageChecker
 {
     private string inputText = "";
     private string feedback = "";
-    private string apiKey = "AIzaSyD0MFUzXp82G3_PtmJYomDzxpawIGrw1JA"; // Set your API key here
+    private string apiKey = "AIzaSyDxcTyrAdgUwd-NZuIFpRHBA-B-5c6Ebc0"; // Set your API key here
     private EditorWindow parentWindow;
 
     public SimpleLanguageChecker(EditorWindow window)
