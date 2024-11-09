@@ -22,11 +22,7 @@ public class VolumeProperties
     public string musicSuggestion;
     public string sfxSuggestion;
 
-<<<<<<< HEAD
     public VolumeProperties(int masterVolume, int voiceVolume, int musicVolume, int sfxVolume,
-=======
-    public VolumeProperties(int masterVolume, int voiceVolume, int musicVolume, int sfxVolume, 
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
                             int masterPass, int voicePass, int musicPass, int sfxPass,
                             string masterSuggestion, string voiceSuggestion, string musicSuggestion, string sfxSuggestion)
     {
@@ -35,22 +31,14 @@ public class VolumeProperties
         this.musicVolume = musicVolume;
         this.sfxVolume = sfxVolume;
         this.masterPass = masterPass;
-<<<<<<< HEAD
         this.voicePass = voicePass;
-=======
-        this.voicePass = voicePass; 
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
         this.musicPass = musicPass;
         this.sfxPass = sfxPass;
         this.masterSuggestion = masterSuggestion;
         this.voiceSuggestion = voiceSuggestion;
         this.musicSuggestion = musicSuggestion;
         this.sfxSuggestion = sfxSuggestion;
-<<<<<<< HEAD
     }
-=======
-    }   
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
 
 }
 public class VolumeChecker
@@ -84,7 +72,6 @@ public class VolumeChecker
 
     public VolumeProperties volume;
 
-<<<<<<< HEAD
     public void OnEnable()
     {
 
@@ -92,15 +79,6 @@ public class VolumeChecker
         foreach (var mixer in mixers)
         {
             if (mixer.name == "MainMixer")
-=======
-    public void OnEnable ()
-    {
-        
-        AudioMixer[] mixers = Resources.FindObjectsOfTypeAll<AudioMixer>();
-        foreach (var mixer in mixers)
-        {
-            if (mixer.name == "MainMixer") 
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
             {
                 audioMixer = mixer;
                 break;
@@ -138,21 +116,13 @@ public class VolumeChecker
 
         // Displaying volume properties in Main Mixer
         EditorGUILayout.LabelField("In Main Mixer:", EditorStyles.boldLabel, GUILayout.Height(30));
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
         // Displaying volume levels with conditional styling
         RenderVolumeRow("Master Volume", volume.masterVolume, volume.masterPass == 3, volume.masterSuggestion);
         RenderVolumeRow("Voice Volume", volume.voiceVolume, volume.voicePass == 3, volume.voiceSuggestion);
         RenderVolumeRow("Music Volume", volume.musicVolume, volume.musicPass == 3, volume.musicSuggestion);
         RenderVolumeRow("SFX Volume", volume.sfxVolume, volume.sfxPass == 3, volume.sfxSuggestion);
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
 
         // Add some space between each volume entry for clarity
         EditorGUILayout.Space(5);
@@ -210,11 +180,7 @@ public class VolumeChecker
             $"voicePass: {voicePass}\n" +
             $"musicPass: {musicPass}\n" +
             $"minLevelforMusic: {Mathf.RoundToInt(musicMinLevel)}\n" +
-<<<<<<< HEAD
             $"maxLevelforMusic: {Mathf.RoundToInt(musicMaxLevel)}\n" +
-=======
-            $"maxLevelforMusic: {Mathf.RoundToInt(musicMaxLevel)}\n"+
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
             $"sfxPass: {sfxPass}\n" +
             $"masterSuggestion: {masterSuggestion}\n" +
             $"voieSugestion: {voiceSuggestion}\n" +
@@ -236,11 +202,7 @@ public class VolumeChecker
             return $"{type} volume is at a safe level.";
         }
     }
-<<<<<<< HEAD
     private int GetLoudnessVerifyNum(int volume, int minLevel, int maxLevel)
-=======
-    private int GetLoudnessVerifyNum(int volume,int minLevel, int maxLevel)
->>>>>>> fee2982299aec1b018ba7235e814cb9f95024654
     {
         if (volume < minLevel)
         {
