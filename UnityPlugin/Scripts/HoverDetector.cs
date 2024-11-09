@@ -1,3 +1,4 @@
+/* // remove this line and the last line to uncomment
 using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -38,3 +39,4 @@ public class HoverDetector : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         ShowMessage();
     }
 }
+*/
