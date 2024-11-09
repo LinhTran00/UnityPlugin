@@ -1,167 +1,124 @@
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
+using UnityEngine.Networking;
+using System.Collections;
+using Unity.EditorCoroutines.Editor;
 
 public class SimpleLanguageChecker
 {
     private string inputText = "";
     private string feedback = "";
-    private string revisedText = "";
-    private string suggestion = "";
-    private GUIStyle boldStyle;
-    private GUIStyle wordWrappedStyle;
+    private string apiKey = "AIzaSyD0MFUzXp82G3_PtmJYomDzxpawIGrw1JA"; // Set your API key here
+    private EditorWindow parentWindow;
+
+    public SimpleLanguageChecker(EditorWindow window)
+    {
+        parentWindow = window;
+    }
 
     public void OnGUI()
     {
-        // Initialize styles if they are null
-        if (boldStyle == null)
-        {
-            boldStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontStyle = FontStyle.Bold
-            };
-        }
-        if (wordWrappedStyle == null)
-        {
-            wordWrappedStyle = new GUIStyle(GUI.skin.label)
-            {
-                wordWrap = true
-            };
-        }
-
-        GUILayout.Label("Enter Text to Evaluate", EditorStyles.boldLabel);
+        GUILayout.Label("Enter Text to Simplify", EditorStyles.boldLabel);
         inputText = EditorGUILayout.TextArea(inputText, GUILayout.Height(200));
 
-        if (GUILayout.Button("Evaluate"))
+        if (GUILayout.Button("Simplify"))
         {
-            feedback = EvaluateText(inputText);
+            // Call the method to simplify text using Gemini API
+            SimplifyText(inputText);
         }
 
         if (!string.IsNullOrEmpty(feedback))
         {
-            GUILayout.Label("Feedback:", EditorStyles.boldLabel);
-            GUILayout.Label(feedback, wordWrappedStyle);
-
-            GUILayout.Label("Suggestion:", boldStyle);
-            GUILayout.Label(suggestion, wordWrappedStyle);
-
-            GUILayout.Label("Revised Text:", EditorStyles.boldLabel);
-            GUILayout.Label(revisedText, wordWrappedStyle);
+            GUILayout.Label("Simplified Text:", EditorStyles.boldLabel);
+            GUILayout.Label(feedback, EditorStyles.wordWrappedLabel);
         }
     }
 
-    private string EvaluateText(string text)
+    private void SimplifyText(string text)
     {
-        feedback = "";
-        suggestion = "";
-        revisedText = text;
-        string[] sentences = text.Split(new[] { '.', '!', '?' }, System.StringSplitOptions.RemoveEmptyEntries);
-        bool isClear = true;
-
-        foreach (string sentence in sentences)
-        {
-            string trimmedSentence = sentence.Trim();
-            if (trimmedSentence.Length > 100)
-            {
-                feedback += "Consider breaking down long sentences.\n";
-                isClear = false;
-            }
-            if (CountComplexWords(trimmedSentence) > 3)
-            {
-                feedback += "Consider simplifying complex words.\n";
-                isClear = false;
-            }
-            if (ContainsPassiveVoice(trimmedSentence))
-            {
-                string activeVoiceSentence = ConvertToActiveVoice(trimmedSentence);
-                feedback += "Sentence uses passive voice.\n";
-                suggestion += "Avoid using 'is', 'are', 'was', 'were', 'be', 'being', 'been'.\n";
-                revisedText = revisedText.Replace(trimmedSentence, activeVoiceSentence);
-                isClear = false;
-            }
-            if (ContainsComplexStructure(trimmedSentence))
-            {
-                feedback += "Consider simplifying the sentence structure.\n";
-                isClear = false;
-            }
-        }
-
-        if (isClear)
-        {
-            feedback = "The text is clear and simple.";
-        }
-
-        return feedback;
+        // Start coroutine to call Gemini API for text simplification
+        EditorCoroutineUtility.StartCoroutine(SendTextToGemini(text), this);
     }
 
-    private int CountComplexWords(string sentence)
+    private IEnumerator SendTextToGemini(string text)
     {
-        string[] complexWords = { "preferences", "continuation", "requires" }; // Add more complex words as needed
-        string[] words = sentence.Split(' ');
-        int complexWordCount = 0;
+        string apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={apiKey}";
 
-        foreach (string word in words)
+        RequestData requestData = new RequestData
         {
-            if (word.Length > 7 || System.Array.Exists(complexWords, w => w.Equals(word, System.StringComparison.OrdinalIgnoreCase)))
+            contents = new[]
             {
-                complexWordCount++;
+                new Content
+                {
+                    parts = new[]
+                    {
+                        new Part { text = "Simplify this text: " + text }
+                    }
+                }
+            }
+        };
+
+        string jsonData = JsonUtility.ToJson(requestData);
+
+        UnityWebRequest request = new UnityWebRequest(apiUrl, "POST");
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Debug.Log("Response: " + request.downloadHandler.text);
+            var geminiResponse = JsonUtility.FromJson<GeminiResponse>(request.downloadHandler.text);
+            if (geminiResponse.candidates != null && geminiResponse.candidates.Length > 0)
+            {
+                feedback = geminiResponse.candidates[0].content.parts[0].text.Trim();
+            }
+            else
+            {
+                feedback = "No response text received!";
             }
         }
-
-        return complexWordCount;
-    }
-
-    private bool ContainsPassiveVoice(string sentence)
-    {
-        // Basic check for passive voice using common patterns
-        string[] passiveIndicators = { "is", "are", "was", "were", "be", "being", "been" };
-        string[] words = sentence.Split(' ');
-
-        for (int i = 0; i < words.Length - 1; i++)
+        else
         {
-            if (System.Array.Exists(passiveIndicators, w => w.Equals(words[i], System.StringComparison.OrdinalIgnoreCase)) &&
-                words[i + 1].EndsWith("ed"))
-            {
-                return true;
-            }
+            feedback = "Error: " + request.error;
+            Debug.LogError("Request error: " + request.error);
         }
 
-        return false;
+        // Refresh the window to display the result
+        parentWindow.Repaint();
     }
+}
 
-    private bool ContainsComplexStructure(string sentence)
-    {
-        // Check for complex structure patterns
-        string[] complexPatterns = { "that you", "so that", "in order to", "as a result of", "due to the fact that" };
-        foreach (string pattern in complexPatterns)
-        {
-            if (sentence.Contains(pattern))
-            {
-                return true;
-            }
-        }
+// Helper classes to parse Gemini API response
+[System.Serializable]
+public class RequestData
+{
+    public Content[] contents;
+}
 
-        return false;
-    }
+[System.Serializable]
+public class GeminiResponse
+{
+    public Candidate[] candidates;
+}
 
-    private string ConvertToActiveVoice(string sentence)
-    {
-        // A simple and not always accurate way to convert passive to active
-        string[] passiveIndicators = { "is", "are", "was", "were", "be", "being", "been" };
-        string[] words = sentence.Split(' ');
-        for (int i = 0; i < words.Length - 1; i++)
-        {
-            if (System.Array.Exists(passiveIndicators, w => w.Equals(words[i], System.StringComparison.OrdinalIgnoreCase)) &&
-                words[i + 1].EndsWith("ed"))
-            {
-                string subject = "Someone";
-                string action = words[i + 1];
-                string restOfSentence = string.Join(" ", words.Skip(i + 2));
-                return $"{subject} {action} {restOfSentence}";
-            }
-        }
+[System.Serializable]
+public class Candidate
+{
+    public Content content;
+}
 
-        // If no passive structure is found, return the original sentence
-        return sentence;
-    }
+[System.Serializable]
+public class Content
+{
+    public Part[] parts;
+}
+
+[System.Serializable]
+public class Part
+{
+    public string text;
 }
