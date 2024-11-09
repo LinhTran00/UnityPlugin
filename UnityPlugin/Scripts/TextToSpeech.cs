@@ -1,4 +1,3 @@
-/* // remove this line and the last line to uncomment
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,7 +16,7 @@ public class TextToSpeech : MonoBehaviour
 
     private void Start()
     {
-        var credentials = new BasicAWSCredentials(accessKey: "add-your-access-key", secretKey: "add-your-secret-key");
+        var credentials = new BasicAWSCredentials(accessKey: "AKIA2UC3BBKY6X6F4HWV", secretKey: "G3WUNnv848QT3Tb11n4WN+TbxYbojN6WFo5reI51");
         client = new AmazonPollyClient(credentials, RegionEndpoint.USEast1);
     }
 
@@ -61,4 +60,3 @@ public class TextToSpeech : MonoBehaviour
         }
     }
 }
-*/
