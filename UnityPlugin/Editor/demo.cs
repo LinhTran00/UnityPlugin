@@ -380,53 +380,53 @@ public class demo : EditorWindow
         );
 
         // volume
-        foreach (VolumeProperties volumeProperty in volumeChecker.volumePropertiesList)
-        {
-            // master volume
-            csv_content += AddReportRow
-            (   
-                "Master Volume",
-                $"{volumeProperty.masterVolume} dB",
-                volumeProperty.masterPass == 3 ? "Pass" : "Fail",
-                volumeProperty.masterPass == 1 ? "< -12 dB" :
-                volumeProperty.masterPass == 2 ? "> -6 dB" :
-                "-12 dB to -6 dB",
-                volumeProperty.masterSuggestion
-            );
-            // voice volume
-            csv_content += AddReportRow
-            (
-                "Voice Volume",
-                $"{volumeProperty.voiceVolume} dB",
-                volumeProperty.voicePass == 3 ? "Pass" : "Fail",
-                volumeProperty.voicePass == 1 ? "< -12 dB" :
-                volumeProperty.voicePass == 2 ? "> -6 dB" :
-                "-12 dB to -6 dB",
-                volumeProperty.voiceSuggestion
-            );
-            // music volume
-            csv_content += AddReportRow
-            (
-                "Music Volume",
-                $"{volumeProperty.musicVolume} dB",
-                volumeProperty.musicPass == 3 ? "Pass" : "Fail",
-                volumeProperty.musicPass == 1 ? "< -20 dB" :
-                volumeProperty.musicPass == 2 ? "> -12 dB" :
-                "-20 dB to -12 dB",
-                volumeProperty.musicSuggestion
-            );
-            // SFX volume
-            csv_content += AddReportRow
-            (
-                "SFX Volume",
-                $"{volumeProperty.sfxVolume} dB",
-                volumeProperty.sfxPass == 3 ? "Pass" : "Fail",
-                volumeProperty.sfxPass == 1 ? "< -12 dB" :
-                volumeProperty.sfxPass == 2 ? "> -3 dB" :
-                "-12 dB to -3 dB",
-                volumeProperty.sfxSuggestion
-            );
-        }
+        VolumeProperties volumeProperty = volumeChecker.volume;
+        
+        // master volume
+        csv_content += AddReportRow
+        (   
+            "Master Volume",
+            $"{volumeProperty.masterVolume} dB",
+            volumeProperty.masterPass == 3 ? "Pass" : "Fail",
+            volumeProperty.masterPass == 1 ? "< -12 dB" :
+            volumeProperty.masterPass == 2 ? "> -6 dB" :
+            "-12 dB to -6 dB",
+            volumeProperty.masterSuggestion
+        );
+        // voice volume
+        csv_content += AddReportRow
+        (
+            "Voice Volume",
+            $"{volumeProperty.voiceVolume} dB",
+            volumeProperty.voicePass == 3 ? "Pass" : "Fail",
+            volumeProperty.voicePass == 1 ? "< -12 dB" :
+            volumeProperty.voicePass == 2 ? "> -6 dB" :
+            "-12 dB to -6 dB",
+            volumeProperty.voiceSuggestion
+        );
+        // music volume
+        csv_content += AddReportRow
+        (
+            "Music Volume",
+            $"{volumeProperty.musicVolume} dB",
+            volumeProperty.musicPass == 3 ? "Pass" : "Fail",
+            volumeProperty.musicPass == 1 ? "< -20 dB" :
+            volumeProperty.musicPass == 2 ? "> -12 dB" :
+            "-20 dB to -12 dB",
+            volumeProperty.musicSuggestion
+        );
+        // SFX volume
+        csv_content += AddReportRow
+        (
+            "SFX Volume",
+            $"{volumeProperty.sfxVolume} dB",
+            volumeProperty.sfxPass == 3 ? "Pass" : "Fail",
+            volumeProperty.sfxPass == 1 ? "< -12 dB" :
+            volumeProperty.sfxPass == 2 ? "> -3 dB" :
+            "-12 dB to -3 dB",
+            volumeProperty.sfxSuggestion
+        );
+        
         GUILayout.EndVertical();
 
         // Text field for custom file name input
