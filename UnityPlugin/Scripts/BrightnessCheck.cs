@@ -12,12 +12,14 @@ public class BrightnessChecker
     private Color[] adjustedColors;
 
     private GUIStyle headerStyle;
+    private GUIStyle subHeaderStyle;
     private GUIStyle labelStyle;
-    private GUIStyle labelStyle1;
+    private GUIStyle passStyle;
+    private GUIStyle failStyle;
+    private GUIStyle suggestionStyle;
+
     private GUIStyle sliderStyle;
     private GUIStyle sliderThumbStyle;
-    private GUIStyle textAreaStyle;
-
     // for report only
     public float brightnessReport;
     public string shortSuggestion;
@@ -45,41 +47,53 @@ public class BrightnessChecker
         headerStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 18,
-            alignment = TextAnchor.MiddleCenter
         };
 
-        labelStyle = new GUIStyle(EditorStyles.label)
+        subHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 16,
+            wordWrap = true,
+        };
+
+        labelStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 14,
-            wordWrap = true,
-            alignment = TextAnchor.MiddleCenter
+            wordWrap= true,
         };
-
-        labelStyle1 = new GUIStyle(EditorStyles.boldLabel)
+        passStyle = new GUIStyle(EditorStyles.boldLabel)
         {
-            fontSize = 18,
+            fontSize = 14,
+            normal = { textColor = Color.green },
             wordWrap = true,
-            alignment = TextAnchor.UpperLeft
+        };
+        failStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 14,
+            normal = { textColor = Color.red },
+            wordWrap = true,
+        };
+        suggestionStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 14,
+            normal = { textColor = Color.cyan }, 
+            wordWrap = true,
         };
 
         sliderStyle = new GUIStyle(GUI.skin.horizontalSlider)
         {
-            fixedHeight = 20
+            fixedHeight = 18,
+            fixedWidth = 500
         };
 
         sliderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb)
         {
-            fixedWidth = 20,
-            fixedHeight = 20
+            fixedWidth = 15,
+            fixedHeight = 18
         };
 
-        textAreaStyle = new GUIStyle(EditorStyles.label)
-        {
-            wordWrap = true,
-            fontSize = 16,
-            alignment = TextAnchor.UpperLeft
-        };
     }
+
+    private Vector2 scrollPosition = Vector2.zero;
 
     public void OnGUI()
     {
@@ -90,33 +104,71 @@ public class BrightnessChecker
         }
 
         InitializeGUIStyles();
+        GUIStyle style;
 
-        GUILayout.Label("Brightness Checker", headerStyle, GUILayout.Height(30));
+        // Start the scroll view
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
+
+        GUILayout.Label("Brightness Checker", headerStyle);
+        GUILayout.Space(20);
 
         // Display brightness report and suggestion
-        GUILayout.Label($"Brightness Report: {brightnessReport.ToString("F2")}", textAreaStyle);
-        GUILayout.Label($"Suggestion: {shortSuggestion}", textAreaStyle);
+        if (brightnessReport > 0.1 && brightnessReport < 0.9)
+        {
+            style = passStyle;
+        }
+        else
+        {
+            style = failStyle;
+        }
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Brightness: ", labelStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label($"{brightnessReport.ToString("F2")}", style);
+        GUILayout.EndHorizontal();
+        PrintBrightnessSuggestion(brightnessReport);
+        GUILayout.Space(10);
 
         // Display original image
-        GUILayout.Label("Original Image", labelStyle1, GUILayout.Height(20));
+        GUILayout.Label("Original Image", subHeaderStyle);
+        GUILayout.Space(5);
         GUILayout.Box(screenTexture, GUILayout.Width(textureWidth), GUILayout.Height(textureHeight));
+        GUILayout.Space(20);
 
         // Brightness adjustment slider
-        GUILayout.Label("Adjust Brightness", labelStyle, GUILayout.Height(20));
-        brightnessFactor = GUILayout.HorizontalSlider(brightnessFactor, 0.1f, 2.0f, sliderStyle, sliderThumbStyle);
+        GUILayout.Label("Adjust Brightness Simulation", headerStyle);
+        GUILayout.Space(20);
+        GUILayout.Label("Use slider below to see brightness change in the adjusted image", labelStyle);
+        brightnessFactor = GUILayout.HorizontalSlider(brightnessFactor, 0.0f, 30.0f, sliderStyle, sliderThumbStyle);
         GUILayout.Space(20);
 
         // Adjust the screen image brightness
         AdjustBrightness();
 
         // Display adjusted image and suggestion
-        GUILayout.Label("Adjusted Image", labelStyle1, GUILayout.Height(20));
+        GUILayout.Label("Adjusted Image", subHeaderStyle);
         GUILayout.Box(adjustedTexture, GUILayout.Width(textureWidth), GUILayout.Height(textureHeight));
-
         float adjustedBrightness = CalculateAverageBrightness(adjustedTexture);
-        GUILayout.Label($"Adjusted Brightness: {adjustedBrightness.ToString("F2")}", textAreaStyle);
+        if (adjustedBrightness > 0.1 && adjustedBrightness < 0.9)
+        {
+            style = passStyle;
+        }
+        else
+        {
+            style = failStyle;
+        }
+        GUILayout.Space(5);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Adjusted Brightness:", labelStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label($"{adjustedBrightness.ToString("F2")}", style);
+        GUILayout.EndHorizontal();
         PrintBrightnessSuggestion(adjustedBrightness);
+        GUILayout.Space(20);
+
+
+        // End the scroll view
+        GUILayout.EndScrollView();
     }
+
 
     private float CalculateAverageBrightness(Texture2D texture)
     {
@@ -158,7 +210,7 @@ public class BrightnessChecker
             suggestion = "The game is very bright. Consider reducing the brightness to avoid potential eye strain for players.";
         }
 
-        GUILayout.Label($"Suggestion: {suggestion}", EditorStyles.wordWrappedLabel);
+        GUILayout.Label($"Suggestion: {suggestion}", suggestionStyle);
     }
 
     private void CaptureScreen()

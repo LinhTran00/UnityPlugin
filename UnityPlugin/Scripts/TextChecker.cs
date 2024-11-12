@@ -64,14 +64,15 @@ public class TextChecker
         GUILayout.Space(12);
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-        EditorGUILayout.BeginVertical(GUILayout.Width(400));
-        EditorGUILayout.LabelField("Text Enhancer", headerStyle, GUILayout.Height(30));
+
+        EditorGUILayout.LabelField("Text Enhancer", headerStyle);
+        GUILayout.Space(12);
 
         // Perform checks and display results
         //CheckTextProperties();
         DisplayTextProperties1(textPropertiesList);
 
-        EditorGUILayout.EndVertical();
+
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndHorizontal();
     }
@@ -162,14 +163,20 @@ public class TextChecker
             if (textProperty != null)
             {
                 // text content
-                EditorGUILayout.LabelField($"{count}. Text: {textProperty.content}", yellowStyle, GUILayout.Height(24));
+                EditorGUILayout.LabelField($"{count}. Text: {textProperty.content}", yellowStyle);
+                GUILayout.Space(5);
                 // font name and font size
-                EditorGUILayout.LabelField($"   Original Font: {textProperty.fontName}, Size: {textProperty.fontSize}", wcagStyle, GUILayout.Height(24));
+                EditorGUILayout.LabelField($"   Original Font: {textProperty.fontName}, Size: {textProperty.fontSize}", wcagStyle);
+                GUILayout.Space(5);
                 // give suggestion if fail font name or font size
                 ValidateFont(textProperty.fontName);
+                GUILayout.Space(5);
+                // suggestion and results for font size
                 ValidateFontSize(textProperty.fontSize);
+                GUILayout.Space(5);
                 // foreground color and background color 
                 ValidateColorContrast(textProperty.text, textProperty.background, textProperty.fontSize);
+                GUILayout.Space(10);
             }
             count++;
         }
@@ -183,17 +190,19 @@ public class TextChecker
 
         string suggestion = isPass ? "Pass" : "Increase font size to at least 16.";
 
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Font Size Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
+        
         GUIStyle style = isPass ? passStyle : failStyle;
         string resultText = isPass ? "Pass" : "Fail";
-        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(20));
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("   Font Size Check:", wcagStyle, GUILayout.ExpandWidth(false));
+        EditorGUILayout.LabelField(resultText, style);
         EditorGUILayout.EndHorizontal();
 
         if (!isPass)
         {
-            EditorGUILayout.LabelField("          Suggestion:    " + suggestion, cyanStyle, GUILayout.Width(550), GUILayout.Height(30));
+            EditorGUILayout.LabelField("          Suggestion:    " + suggestion, cyanStyle);
         }
+
     }
 
     private void ValidateFont(string fontName)
@@ -203,17 +212,17 @@ public class TextChecker
         
 
         string suggestion = isPass ? "Pass" : "Consider using a more readable and accessible font like Arial, Verdana, or Roboto.";
-
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Font Check:", wcagStyle, GUILayout.Width(200), GUILayout.Height(20));
         GUIStyle style = isPass ? passStyle : failStyle;
         string resultText = isPass ? "Pass" : "Fail";
-        EditorGUILayout.LabelField(resultText, style, GUILayout.Width(50), GUILayout.Height(20));
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("   Font Check:", wcagStyle, GUILayout.ExpandWidth(false));
+        EditorGUILayout.LabelField(resultText, style);
         EditorGUILayout.EndHorizontal();
 
         if (!isPass)
         {
-            EditorGUILayout.LabelField("          Suggestion:    " + suggestion, cyanStyle, GUILayout.Width(550), GUILayout.Height(30));
+            EditorGUILayout.LabelField("          Suggestion:    " + suggestion, cyanStyle);
         }
     }
 
@@ -227,33 +236,33 @@ public class TextChecker
         // Check for WcAG AAA
         bool aaaPass = fontSize >= 18 ? contrastRatio >= 4.5f : contrastRatio >= 7.0f;
         if (aaaPass) { wcagaaa = aaaPass; }
-        GUILayout.Space(10);
 
         // Display the text and background color
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Text Color:", wcagStyle, GUILayout.Width(100), GUILayout.Height(20));
-        textColor = EditorGUILayout.ColorField(new GUIContent(), textColor, false, false, false, GUILayout.Width(120), GUILayout.Height(18));
+        EditorGUILayout.LabelField("   Text Color:", wcagStyle, GUILayout.ExpandWidth(false));
+        textColor = EditorGUILayout.ColorField(new GUIContent(), textColor, false, false, false, GUILayout.Width(150), GUILayout.ExpandHeight(false));
         EditorGUILayout.EndHorizontal();
-
+        GUILayout.Space(5);
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Background Color:", wcagStyle, GUILayout.Width(150), GUILayout.Height(20));
-        backgroundColor = EditorGUILayout.ColorField(new GUIContent(), backgroundColor, false, false, false, GUILayout.Width(120), GUILayout.Height(18));
+        EditorGUILayout.LabelField("   Background Color:", wcagStyle, GUILayout.ExpandWidth(false));
+        backgroundColor = EditorGUILayout.ColorField(new GUIContent(), backgroundColor, false, false, false, GUILayout.Width(150), GUILayout.ExpandHeight(false));
         EditorGUILayout.EndHorizontal();
-
+        GUILayout.Space(5);
         // wcag / results / suggestions
         string aaSuggestion = aaPass ? "Pass" : $"Fail - Contrast ratio is {contrastRatio:0.00}. Minimum is 4.5 for normal text and 3.0 for large text.";
         string aaaSuggestion = aaaPass ? "Pass" : $"Fail - Contrast ratio is {contrastRatio:0.00}. Minimum is 7.0 for normal text and 4.5 for large text.";
 
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Contrast Ratio Check (AA):", wcagStyle, GUILayout.Width(250), GUILayout.Height(20));
         GUIStyle styleAA = aaPass ? passStyle : failStyle;
-        EditorGUILayout.LabelField(aaSuggestion, styleAA, GUILayout.Width(275), GUILayout.Height(20));
-        EditorGUILayout.EndHorizontal();
+        GUIStyle styleAAA = aaaPass ? passStyle : failStyle;
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("    Contrast Ratio Check (AAA):", wcagStyle, GUILayout.Width(250), GUILayout.Height(20));
-        GUIStyle styleAAA = aaaPass ? passStyle : failStyle;
-        EditorGUILayout.LabelField(aaaSuggestion, styleAAA, GUILayout.Width(275), GUILayout.Height(20));
+        EditorGUILayout.LabelField("   Contrast Ratio Check (AA):", wcagStyle,GUILayout.ExpandWidth(false));
+        EditorGUILayout.LabelField(aaSuggestion, styleAA);
+        EditorGUILayout.EndHorizontal();
+        GUILayout.Space(5);
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("   Contrast Ratio Check (AAA):", wcagStyle, GUILayout.ExpandWidth(false));
+        EditorGUILayout.LabelField(aaaSuggestion, styleAAA);
         EditorGUILayout.EndHorizontal();
     }
 

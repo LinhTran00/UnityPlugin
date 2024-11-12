@@ -4,7 +4,9 @@ using System.Linq;
 using System.Xml.Serialization;
 using UnityEditor;
 using UnityEditor.ShaderGraph.Legacy;
+using UnityEditor.VersionControl;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 public class demo : EditorWindow
 {
@@ -179,34 +181,90 @@ private void OnGUI()
     GUILayout.EndHorizontal();
 }
 
+    private Vector2 scrollPosition; // To track the scroll position
+
     private void DrawHomepage()
     {
         // Set custom font style and color for the main heading
         GUIStyle mainHeadingStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 20, // Larger font for main title
-            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) } // Light blue/white for dark backgrounds
+            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) }, // Light blue/white for dark backgrounds
+            hover = { textColor = new Color(0.9f, 0.95f, 1.0f) }
         };
 
         // Set font style and color for numbered list heading
         GUIStyle featureHeadingStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 15, // Smaller font size for feature titles
-            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) } // Same heading color
+            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) }, // Same heading color
+            hover = { textColor = new Color(0.9f, 0.95f, 1.0f) }
         };
 
         // Set style for the descriptions under each feature
         GUIStyle featureStyle = new GUIStyle(EditorStyles.label)
         {
-            fontSize = 12,
+            fontSize = 15,
             wordWrap = true,
-            normal = { textColor = new Color(0.8f, 0.8f, 0.85f) } // Light grey for readability on dark backgrounds
+            normal = { textColor = new Color(0.8f, 0.8f, 0.85f) }, // Light grey for readability on dark backgrounds
+            hover = { textColor = new Color(0.8f, 0.8f, 0.85f) }
         };
+
+        // Set style for header of the instruction description
+        GUIStyle headerParagraphInstruct = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 15,
+            wordWrap = true,
+            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) },
+            hover = { textColor = new Color(0.9f, 0.95f, 1.0f) }
+        };
+
+        // Set style for the bold/highlight instruction description
+        GUIStyle boldParagraphInstruct = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 15,
+            wordWrap = false,
+            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) },
+            hover = { textColor = new Color(0.9f, 0.95f, 1.0f) }
+        };
+
+        // Set style for normal text instruction description
+        GUIStyle normalParagraphInstruct = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 15,
+            wordWrap = false,
+        };
+
+        // Start the scroll view
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
 
         GUILayout.Label("Welcome to the Accessibility Plugin", mainHeadingStyle); // Main heading
         GUILayout.Space(10);
 
-        GUILayout.Label("Our plugin includes the following features to help make your application more accessible:", featureStyle);
+        GUILayout.Label("To get the best results from our plugin, follow these steps to ensure optimal functionality and accurate information capture for your game scene:", headerParagraphInstruct);
+        GUILayout.Space(5);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("1. ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("Start by playing the game", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
+        GUILayout.Space(5);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("2. ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("Pause the game", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("when you reach the specific scene you’d like to analyze.", normalParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
+        GUILayout.Space(5);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("3. With the scene paused, ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("use and explore the plugin’s features", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("to gather and review detailed information for this scene.", normalParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
+        GUILayout.Space(40);
+
+        GUILayout.Label("Our plugin includes the following features to help make your application more accessible:", boldParagraphInstruct);
         GUILayout.Space(5);
 
         // Numbered list with heading-style color for each title
@@ -219,7 +277,11 @@ private void OnGUI()
         DrawFeature("7. Field of View (FoV) Checker", "      Measure visible areas in a 3D scene.", featureHeadingStyle, featureStyle);
         DrawFeature("8. Volume Checker", "      Verify volume levels for user comfort.", featureHeadingStyle, featureStyle);
         DrawFeature("9. Text-To-Speech (TTS)", "      Integrate audio feedback using Amazon Polly.", featureHeadingStyle, featureStyle);
+
+        // End the scroll view
+        GUILayout.EndScrollView();
     }
+
 
     private void DrawFeature(string title, string description, GUIStyle titleStyle, GUIStyle featureStyle)
     {
@@ -253,13 +315,34 @@ private void OnGUI()
         GUILayout.Space(5);
         GUILayout.Label("6. Start the game and enjoy the voiceover functionality.", EditorStyles.wordWrappedLabel);
     }
-        private void Report()
+    private void Report()
     {
-        string csv_content = "";
-        GUILayout.Label("Report", EditorStyles.boldLabel);
+        // initate style for report tab
+        GUIStyle mainHeadingStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 20, // Larger font for main title
+        };
+        GUIStyle labelStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 14, // Larger font for main title
+        };
+        GUIStyle highlightStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 12, // Larger font for main title
+            normal = { textColor = Color.yellow },
+            hover = { textColor = Color.yellow }
+        };
+        GUIStyle highlightStyle1 = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 12, // Larger font for main title
+            normal = { textColor = Color.yellow },
+            hover = { textColor = Color.yellow },
+            fontStyle = FontStyle.Italic
+        };
 
-        // Example grid layout
-        GUILayout.BeginVertical("box");
+        string csv_content = "";
+        GUILayout.Label("Report", mainHeadingStyle);
+        GUILayout.Space(10);
 
         // flash check
         csv_content += AddReportRow
@@ -496,17 +579,25 @@ private void OnGUI()
             volumeProperty.sfxSuggestion
         );
         
-        GUILayout.EndVertical();
 
         // Text field for custom file name input
-        GUILayout.Label("Enter custom file name to generate report:");
+        GUILayout.Label("Enter custom file name to generate report: ", labelStyle);
+        GUILayout.Space(5);
         customFileName = GUILayout.TextField(customFileName, GUILayout.Width(400));
+        GUILayout.Space(5);
 
         // Add a button to export the report as a CSV file
-        if (GUILayout.Button("Export Report to CSV"))
+        if (GUILayout.Button("Export Report to CSV", GUILayout.Width(400)))
         {
             ExportReportToCSV(customFileName, csv_content);
         }
+
+        GUILayout.Space(20);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("**Find the file inside ", highlightStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label("UnityPlugin/Reports", highlightStyle1, GUILayout.ExpandWidth(false));
+        GUILayout.Label(" folder**", highlightStyle);
+        GUILayout.EndHorizontal();
     }
 
     private void ExportReportToCSV(string fileName, string content)
@@ -517,8 +608,8 @@ private void OnGUI()
             fileName = "report"; // Default file name
         }
 
-        // Define the folder path (Reports folder inside the project)
-        string folderPath = Path.Combine(Application.dataPath,"Reports");
+        // Define the folder path (Reports folder inside the UnityPlugin folder inside the project)
+        string folderPath = Path.Combine(Application.dataPath, "UnityPlugin", "Reports");
 
         // Ensure the directory exists
         if (!Directory.Exists(folderPath))

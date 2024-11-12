@@ -30,6 +30,7 @@ public class ColorblindSimulator
     private ColorBlindnessType selectedType;
     private bool showColorField;
     private Color[] colorPalette;
+    private bool closeButton = false;
 
 
     public void OnEnable()
@@ -85,6 +86,14 @@ public class ColorblindSimulator
 
         if (showColorField)
         {
+            GUILayout.BeginHorizontal();
+            if (closeButton) // "X" close button
+            {
+                showColorField = false; // Hide the color field when clicked
+                closeButton = false;
+            }
+            GUILayout.EndHorizontal();
+
             DrawColorField();
         }
     }
@@ -114,8 +123,17 @@ public class ColorblindSimulator
     }
 
     private void DrawColorField()
-    {
-        GUILayout.Label("Color Range for " + selectedType);
+    { 
+        GUIStyle bold = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 15
+        };
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Color Range for " + selectedType, bold);
+        GUILayout.FlexibleSpace();
+        closeButton = GUILayout.Button("X", bold);
+        GUILayout.EndHorizontal();
 
         foreach (Color color in colorPalette)
         {

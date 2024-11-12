@@ -20,8 +20,15 @@ public class FlashingCheck
     private string blueLightReportContent = "";
     private GUIStyle headerStyle;
     private GUIStyle headerStyle1;
-    private GUIStyle reportStyle;
+    private GUIStyle subheaderStyle;
+    private GUIStyle subheaderStyle1;
     private GUIStyle largeFontStyle;
+    private GUIStyle largeFontStyleNoWrap;
+    private GUIStyle labelStyle;
+    private GUIStyle normalStyle;
+    private GUIStyle passStyle;
+    private GUIStyle failStyle;
+    private GUIStyle warningStyle;
 
     // for report
     public bool flashPass;
@@ -41,32 +48,73 @@ public class FlashingCheck
         GenerateFlashingReport();
         GenerateBlueLightReport();
     }
-
+    private Vector2 scrollPosition = Vector2.zero;
     public void OnGUI()
     {
         mainCamera = Camera.main; // Assigning the main camera to mainCamera
 
         InitializeStyles();
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
+        GUILayout.Space(10);
+        // Flashing warning description
+        EditorGUILayout.LabelField("Flash Warning", headerStyle, GUILayout.Height(50));
+        GUILayout.Space(10);
 
-        // Flashing report display
-        EditorGUILayout.LabelField("Flash Warning", headerStyle);
+        GUILayout.BeginHorizontal();    
+        GUILayout.Label("Description: ", largeFontStyleNoWrap);
         GUILayout.Label(flashWarningDescription, largeFontStyle);
-
+        GUILayout.EndHorizontal();
         GUILayout.Space(10);
 
-        GUILayout.Label("Flashing Effect Report:", headerStyle);
-        flashingReportContent = EditorGUILayout.TextArea(flashingReportContent, reportStyle, GUILayout.Height(200));
+        // Flashing effect pass/fail
+        GUILayout.Label("Flashing Effect Report", subheaderStyle);
+        GUILayout.Space(5);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Flashing effect detected: ", labelStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label($"{flashValue}% ", flashPass ? passStyle : failStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label("of pixels changed significantly.", normalStyle);
+        GUILayout.EndHorizontal();
+        GUILayout.Space(5);
+        if (flashPass)
+        {
+            GUILayout.Label("\tFlashing effect is within acceptable limits.", warningStyle);
+        }
+        else
+        {
+            GUILayout.Label("\tWarning: Flashing effect may cause discomfort.", warningStyle);
+        }
 
+        GUILayout.Space(50);
+
+        // Blue light warning description
+        EditorGUILayout.LabelField("Blue Light Warning", headerStyle1, GUILayout.Height(50));
         GUILayout.Space(10);
 
-        // Blue light report display
-        EditorGUILayout.LabelField("Blue Light Warning", headerStyle1);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Description: ", largeFontStyleNoWrap);
         GUILayout.Label(blueLightWarningDescription, largeFontStyle);
-
+        GUILayout.EndHorizontal();
         GUILayout.Space(10);
 
-        GUILayout.Label("Blue Light Effect Report:", headerStyle1);
-        blueLightReportContent = EditorGUILayout.TextArea(blueLightReportContent, reportStyle, GUILayout.Height(200));
+        // Blue light effect pass/fail
+        GUILayout.Label("Blue Light Effect Report", subheaderStyle1);
+        GUILayout.Space(5);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Blue light detected: ", labelStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label($"{bluelightValue}% ", bluelightPass ? passStyle : failStyle, GUILayout.ExpandWidth(false));
+        GUILayout.Label("of pixels have high blue light intensity.", normalStyle);
+        GUILayout.EndHorizontal();
+        GUILayout.Space(5);
+        if (bluelightPass)
+        {
+            GUILayout.Label("\tBlue light levels are within acceptable limits.", warningStyle);
+        }
+        else
+        {
+            GUILayout.Label("\tWarning: Blue light intensity may cause eye strain.", warningStyle);
+        }
+        GUILayout.Space(30);
+        GUILayout.EndScrollView();
     }
 
     private void GenerateFlashingReport()
@@ -110,30 +158,85 @@ public class FlashingCheck
         {
             headerStyle = new GUIStyle(EditorStyles.boldLabel);
             headerStyle.normal.textColor = Color.yellow;
-            headerStyle.fontSize = 16; // Increased font size for accessibility
+            headerStyle.hover.textColor = Color.yellow;
+            headerStyle.fontSize = 20; // Increased font size for accessibility
         }
         if (headerStyle1 == null)
         {
             headerStyle1 = new GUIStyle(EditorStyles.boldLabel);
-            headerStyle1.normal.textColor = Color.blue;
-            headerStyle1.fontSize = 16; // Increased font size for accessibility
+            headerStyle1.normal.textColor = new Color(0f, 0.66f, 0.88f);
+            headerStyle1.hover.textColor = new Color(0f, 0.66f, 0.88f);
+            headerStyle1.fontSize = 20; // Increased font size for accessibility
+        }
+        if (subheaderStyle == null)
+        {
+            subheaderStyle = new GUIStyle(EditorStyles.boldLabel);
+            subheaderStyle.normal.textColor = Color.yellow;
+            subheaderStyle.hover.textColor = Color.yellow;
+            subheaderStyle.fontSize = 16; // Increased font size for accessibility
+        }
+        if (subheaderStyle1 == null)
+        {
+            subheaderStyle1 = new GUIStyle(EditorStyles.boldLabel);
+            subheaderStyle1.normal.textColor = new Color(0f, 0.66f, 0.88f);
+            subheaderStyle1.hover.textColor = new Color(0f, 0.66f, 0.88f);
+            subheaderStyle1.fontSize = 16; // Increased font size for accessibility
         }
 
         // Report content style with increased font size for accessibility
-        if (reportStyle == null)
-        {
-            reportStyle = new GUIStyle(EditorStyles.textArea);
-            reportStyle.fontSize = 14; // Increased font size for better readability
-            reportStyle.wordWrap = true;
-        }
-
         if (largeFontStyle == null)
         {
             largeFontStyle = new GUIStyle(EditorStyles.label); // Base it on the default label style
             largeFontStyle.fontSize = 16; // Set your desired font size
             largeFontStyle.wordWrap = true; // Enable word wrapping if the text is long
-            largeFontStyle.normal.textColor = Color.white; // Set the text color if desired
         }
+
+        if (largeFontStyleNoWrap == null)
+        {
+            largeFontStyleNoWrap = new GUIStyle(EditorStyles.boldLabel); // Base it on the default label style
+            largeFontStyleNoWrap.fontSize = 16; // Set your desired font size
+            largeFontStyleNoWrap.wordWrap = false; // Enable word wrapping if the text is long
+        }
+
+        if (labelStyle == null)
+        {
+            labelStyle = new GUIStyle(EditorStyles.boldLabel);
+            labelStyle.fontSize = 16;
+            labelStyle.wordWrap = true;
+        }
+
+        if (normalStyle == null)
+        {
+            normalStyle = new GUIStyle(EditorStyles.label);
+            normalStyle.fontSize = 16;
+            normalStyle.wordWrap = true;
+        }
+
+        if (passStyle == null)
+        {
+            passStyle = new GUIStyle(EditorStyles.boldLabel);
+            passStyle.fontSize = 16;
+            passStyle.normal.textColor = Color.green;
+            passStyle.hover.textColor = Color.green;    
+        }
+
+        if (failStyle == null)
+        {
+            failStyle = new GUIStyle(EditorStyles.boldLabel);
+            failStyle.fontSize = 16;
+            failStyle.normal.textColor = Color.red;
+            failStyle.hover.textColor = Color.red;
+        }
+
+        if (warningStyle == null)
+        {
+            warningStyle = new GUIStyle(EditorStyles.boldLabel);
+            warningStyle.fontSize = 16;
+            warningStyle.wordWrap = true;
+            warningStyle.normal.textColor = Color.cyan;
+            warningStyle.hover.textColor = Color.cyan;
+        }
+
     }
 
     private void CheckFlashingEffect(StringWriter writer)
@@ -180,7 +283,6 @@ public class FlashingCheck
         }
     }
 
-
     private void CheckBlueLightEffect(StringWriter writer)
     {
         CaptureScreen();
@@ -201,7 +303,7 @@ public class FlashingCheck
 
         // report
         bluelightPass = blueLightPercentage <= 30;
-        bluelightValue = blueLightPercentage;   
+        bluelightValue = blueLightPercentage;
 
         writer.WriteLine($"Blue light detected: {blueLightPercentage}% of pixels have high blue light intensity.");
 
