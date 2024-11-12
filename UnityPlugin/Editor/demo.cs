@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -9,33 +10,30 @@ public class demo : EditorWindow
 {
     private enum Tab
     {
-        Tab0,
-        Tab1,
-        Tab2,
-        Tab3,
-        Tab4,
-        Tab5,
-        Tab6,
-        Tab7,
-        Tab8,
-        Tab9,
-        Tab10
-       
-        // Add more tabs as needed
+        Homepage,
+        GenerateReport, // Comma added here
+        ColorContrastChecker, // Comma added here
+        TextChecker, // Comma added here
+        ColorblindChecker, // Comma added here
+        BrightnessChecker, // Comma added here
+        FlashingChecker, // Comma added here
+        SimpleLanguageChecker, // Comma added here
+        FoVChecker, // Comma added here
+        VolumeChecker, // Comma added here
+        TextToSpeech, // Comma added here
     }
 
-    private Tab currentTab;
-    private ColorChecker colorChecker; // Instance of ColorTextChecker class
-    private ColorblindSimulator simulator; // Instance of ColorblindSimulator
+    private Tab currentTab = Tab.Homepage;
+    private bool showMenu = false; // Toggle for the tab menu
+    private ColorChecker colorChecker;
+    private ColorblindSimulator simulator;
     private FlashingCheck flashingCheck;
     private BrightnessChecker brightnessChecker;
     private TextChecker textChecker;
     private SimpleLanguageChecker simpleLanguageChecker;
     private FovChecker fovChecker;
     private VolumeChecker volumeChecker;
-
-    private string customFileName = ""; // To store the user-input file name
-
+    private string customFileName = "";
 
     [MenuItem("Window/demo")]
     public static void ShowWindow()
@@ -65,110 +63,181 @@ public class demo : EditorWindow
         fovChecker = new FovChecker();
         fovChecker.onEnable();
 
-        volumeChecker = new VolumeChecker(); 
-        volumeChecker.OnEnable();   
+        volumeChecker = new VolumeChecker();
+        volumeChecker.OnEnable();
     }
 
-    private void OnGUI()
+private void OnGUI()
+{
+    GUILayout.BeginHorizontal();
+
+    // Hamburger menu button
+    if (GUILayout.Button(showMenu ? "X" : "☰", GUILayout.Width(30), GUILayout.Height(30)))
     {
- 
+        showMenu = !showMenu; // Toggle the menu visibility
+    }
 
-        currentTab = (Tab)GUILayout.Toolbar((int)currentTab, new string[] { "*","Report", "Color Contrast", "Text", "Colorblind", "Brightness", "Flash", "Language", "FoV", "Volume", "TTS"/* Add tab names */ });
+    if (showMenu)
+    {
+        // Sidebar with options and a dividing line, giving it a distinct box-like look
+        GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+        boxStyle.margin = new RectOffset(10, 10, 10, 10); // Add some margins for a clean look
 
-        switch (currentTab)
+        GUILayout.BeginVertical(boxStyle, GUILayout.Width(150), GUILayout.ExpandHeight(true));
+        GUILayout.Space(10);
+
+        // Change label text to "Features", set font size to 14 pt and center-align
+        GUIStyle labelStyle = new GUIStyle(EditorStyles.boldLabel);
+        labelStyle.fontSize = 14;
+        labelStyle.alignment = TextAnchor.MiddleCenter; // Center-align the label
+        GUILayout.Label("Features", labelStyle);
+
+        // Display tabs as a list of left-aligned labels instead of buttons
+        foreach (var tab in Enum.GetValues(typeof(Tab)))
         {
-            case Tab.Tab0:
-                DrawTab0();
-                break;
-            case Tab.Tab1:
-                Report();
-                break;
-            case Tab.Tab2:
-                DrawTab2();
-                break;
-            case Tab.Tab3:
-                DrawTab3();
-                break;
-            case Tab.Tab4:
-                DrawTab4();
-                break;
-            case Tab.Tab5:
-                DrawTab5();
-                break;
-            case Tab.Tab6:
-                DrawTab6();
-                break;
-            case Tab.Tab7:
-                DrawTab7();
-                break;
-            case Tab.Tab8:
-                DrawTab8();
-                break;
-            case Tab.Tab9:
-                DrawTab9();
-                break;
-            case Tab.Tab10:
-                DrawTab10();
-                break;
-            default:
-                break;
+            // Set a default style for the tab
+            GUIStyle tabStyle = new GUIStyle();
+            tabStyle.alignment = TextAnchor.MiddleLeft; // Align text to the left
+            tabStyle.normal.textColor = Color.white; // Default color for the text
+
+            // Create a rect for the current tab, to detect if it's being hovered
+            Rect tabRect = GUILayoutUtility.GetLastRect();
+            bool isHovered = tabRect.Contains(Event.current.mousePosition);
+
+            // If hovering, change the text color to yellow
+            if (isHovered)
+            {
+                tabStyle.normal.textColor = Color.yellow; // Highlight the tab name when hovered
+            }
+
+            // Create the tab as a "button" but styled as a label
+            if (GUILayout.Button(tab.ToString(), tabStyle, GUILayout.Height(30)))
+            {
+                currentTab = (Tab)tab; // Set the selected tab
+                showMenu = false; // Close the menu after selecting a tab
+            }
+
+            // Line separator between tabs
+            GUILayout.Box("", GUILayout.Height(1), GUILayout.ExpandWidth(true)); // Line after each tab
         }
+
+        GUILayout.FlexibleSpace();
+        GUILayout.Box("", GUILayout.Height(1), GUILayout.ExpandWidth(true)); // Divider line
+        if (GUILayout.Button("Back to Homepage"))
+        {
+            currentTab = Tab.Homepage;
+            showMenu = false; // Close menu when going back to homepage
+        }
+
+        GUILayout.EndVertical();
     }
 
-    private void DrawTab0()
-    {
-        GUILayout.Label("Table of Contents", EditorStyles.boldLabel);
+    // Main content area
+    GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
 
-        GUILayout.Space(10); // Add some spacing between title and content
+    // Display the content of the current tab
+    switch (currentTab)
+    {
+        case Tab.Homepage:
+            DrawHomepage();
+            break;
+        case Tab.GenerateReport:
+            Report();
+            break;
+        case Tab.ColorContrastChecker:
+            DrawTabColorContrast();
+            break;
+        case Tab.TextChecker:
+            DrawTabText();
+            break;
+        case Tab.ColorblindChecker:
+            DrawTabColorblind();
+            break;
+        case Tab.BrightnessChecker:
+            DrawTabBrightness();
+            break;
+        case Tab.FlashingChecker:
+            DrawTabFlash();
+            break;
+        case Tab.SimpleLanguageChecker:
+            DrawTabLanguage();
+            break;
+        case Tab.FoVChecker:
+            DrawTabFoV();
+            break;
+        case Tab.VolumeChecker:
+            DrawTabVolume();
+            break;
+        case Tab.TextToSpeech:
+            DrawTabTTS();
+            break;
+        default:
+            break;
+    }
 
-        // List all tabs and their descriptions
-        DrawTabDescription("1", "Color Contrast");
-        DrawTabDescription("2", "Text");
-        DrawTabDescription("3", "Colorblind Simulator");
-        DrawTabDescription("4", "Brightness Check");
-        DrawTabDescription("5", "Flash Check");
-        DrawTabDescription("6", "Simple Language Check");
-        DrawTabDescription("7", "Field Of View");
-        DrawTabDescription("8", "Volume Check");
-        DrawTabDescription("9", "Text-to-speech");
-        GUILayout.FlexibleSpace(); // Add flexible space to push content to the top
+    GUILayout.EndVertical();
+    GUILayout.EndHorizontal();
+}
 
-        // Optionally, add a footer or any additional content at the bottom of Tab0
-    }
-    private void DrawTab2()
+    private void DrawHomepage()
     {
-        colorChecker.OnGUI();
+        // Set custom font style and color for the main heading
+        GUIStyle mainHeadingStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 20, // Larger font for main title
+            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) } // Light blue/white for dark backgrounds
+        };
+
+        // Set font style and color for numbered list heading
+        GUIStyle featureHeadingStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 15, // Smaller font size for feature titles
+            normal = { textColor = new Color(0.9f, 0.95f, 1.0f) } // Same heading color
+        };
+
+        // Set style for the descriptions under each feature
+        GUIStyle featureStyle = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 12,
+            wordWrap = true,
+            normal = { textColor = new Color(0.8f, 0.8f, 0.85f) } // Light grey for readability on dark backgrounds
+        };
+
+        GUILayout.Label("Welcome to the Accessibility Plugin", mainHeadingStyle); // Main heading
+        GUILayout.Space(10);
+
+        GUILayout.Label("Our plugin includes the following features to help make your application more accessible:", featureStyle);
+        GUILayout.Space(5);
+
+        // Numbered list with heading-style color for each title
+        DrawFeature("1. Color Contrast Checker", "      Ensure that text and background colors have sufficient contrast.", featureHeadingStyle, featureStyle);
+        DrawFeature("2. Text Checker", "      Evaluate text readability and accessibility.", featureHeadingStyle, featureStyle);
+        DrawFeature("3. Colorblind Simulator", "      View your application as it would appear to colorblind users.", featureHeadingStyle, featureStyle);
+        DrawFeature("4. Brightness Checker", "      Analyze screen brightness levels for visibility.", featureHeadingStyle, featureStyle);
+        DrawFeature("5. Flashing Check", "      Detect potentially harmful flashing elements.", featureHeadingStyle, featureStyle);
+        DrawFeature("6. Language Checker", "      Assess text for simplicity and clarity.", featureHeadingStyle, featureStyle);
+        DrawFeature("7. Field of View (FoV) Checker", "      Measure visible areas in a 3D scene.", featureHeadingStyle, featureStyle);
+        DrawFeature("8. Volume Checker", "      Verify volume levels for user comfort.", featureHeadingStyle, featureStyle);
+        DrawFeature("9. Text-To-Speech (TTS)", "      Integrate audio feedback using Amazon Polly.", featureHeadingStyle, featureStyle);
     }
-    private void DrawTab3()
+
+    private void DrawFeature(string title, string description, GUIStyle titleStyle, GUIStyle featureStyle)
     {
-        textChecker.OnGUI();
+        GUILayout.Label(title, titleStyle);  // Applying the feature title style with smaller font size
+        GUILayout.Label(description, featureStyle);
+        GUILayout.Space(5);
     }
-    private void DrawTab4()
-    {
-        simulator.OnGUI();
-    }
-    private void DrawTab5()
-    {
-        brightnessChecker.OnGUI();
-    }
-    private void DrawTab6()
-    {
-        flashingCheck.OnGUI();
-    }
-    private void DrawTab7()
-    {
-        simpleLanguageChecker.OnGUI();
-    }
-    private void DrawTab8()
-    {
-        fovChecker.OnGUI(); 
-    }
-    private void DrawTab9()
-    {
-        volumeChecker.OnGUI();
-    }
-    
-    private void DrawTab10()
+
+    private void DrawTabColorContrast() => colorChecker.OnGUI();
+    private void DrawTabText() => textChecker.OnGUI();
+    private void DrawTabColorblind() => simulator.OnGUI();
+    private void DrawTabBrightness() => brightnessChecker.OnGUI();
+    private void DrawTabFlash() => flashingCheck.OnGUI();
+    private void DrawTabLanguage() => simpleLanguageChecker.OnGUI();
+    private void DrawTabFoV() => fovChecker.OnGUI();
+    private void DrawTabVolume() => volumeChecker.OnGUI();
+
+    private void DrawTabTTS()
     {
         GUILayout.Label("How to Use Text-To-Speech (TTS)", EditorStyles.boldLabel);
         GUILayout.Space(10);
@@ -184,7 +253,7 @@ public class demo : EditorWindow
         GUILayout.Space(5);
         GUILayout.Label("6. Start the game and enjoy the voiceover functionality.", EditorStyles.wordWrappedLabel);
     }
-    private void Report()
+        private void Report()
     {
         string csv_content = "";
         GUILayout.Label("Report", EditorStyles.boldLabel);
