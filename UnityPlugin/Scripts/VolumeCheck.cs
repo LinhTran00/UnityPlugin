@@ -69,6 +69,11 @@ public class VolumeChecker
     private GUIStyle failStyle;
     private GUIStyle passStyle;
     private GUIStyle cyanStyle;
+    private GUIStyle header1;
+    private GUIStyle header2;
+    private GUIStyle normal;
+    private GUIStyle boldnormal;
+    private GUIStyle noticeStyle;
 
     public VolumeProperties volume;
 
@@ -96,48 +101,62 @@ public class VolumeChecker
     public void OnGUI()
     {
         InitializeGUIStyles();
-        // Begin vertical layout with a fixed width for better UI organization
-        EditorGUILayout.BeginVertical(GUILayout.Width(400));
 
         // Title
-        EditorGUILayout.LabelField("Volume Checker", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Volume Checker", header1);
+
+        EditorGUILayout.Space(10);
+
+        // Instruction on allowing this feature to work properly
+        EditorGUILayout.LabelField("<b>Important Notice!!</b>", noticeStyle);
+        EditorGUILayout.LabelField("   Ensure there is an AudioMixer object named <b>'MainMixer'</b> that includes volume controls for Master, Music, Voice, and SFX.", noticeStyle);
 
         // Spacing for better readability
         EditorGUILayout.Space(10);
 
         // Recommended levels section
-        EditorGUILayout.LabelField("Recommended Loudness Levels:", EditorStyles.boldLabel);
-        EditorGUILayout.LabelField("Master Volume: -12 dB to -6 dB", GUILayout.Height(20));
-        EditorGUILayout.LabelField("Voice Volume: -12 dB to -6 dB", GUILayout.Height(20));
-        EditorGUILayout.LabelField("Music Volume: -20 dB to -12 dB", GUILayout.Height(20));
-        EditorGUILayout.LabelField("SFX Volume: -12 dB to -3 dB", GUILayout.Height(20));
+        EditorGUILayout.LabelField("Recommended Loudness Levels", header2);
+        GUILayout.Space(5);
 
-        EditorGUILayout.Space(10);
+        // Adjusted spacing using GUILayoutOption
+        RenderLabeledVolumeRow("Master Volume:", "-12 dB to -6 dB");
+        RenderLabeledVolumeRow("Voice Volume:", "-12 dB to -6 dB");
+        RenderLabeledVolumeRow("Music Volume:", "-20 dB to -12 dB");
+        RenderLabeledVolumeRow("SFX Volume:", "-12 dB to -3 dB");
+
+        EditorGUILayout.Space(20);
 
         // Displaying volume properties in Main Mixer
-        EditorGUILayout.LabelField("In Main Mixer:", EditorStyles.boldLabel, GUILayout.Height(30));
+        EditorGUILayout.LabelField("Volume Check (MainMixer)", header2);
+        GUILayout.Space(10);
 
         // Displaying volume levels with conditional styling
         RenderVolumeRow("Master Volume", volume.masterVolume, volume.masterPass == 3, volume.masterSuggestion);
         RenderVolumeRow("Voice Volume", volume.voiceVolume, volume.voicePass == 3, volume.voiceSuggestion);
         RenderVolumeRow("Music Volume", volume.musicVolume, volume.musicPass == 3, volume.musicSuggestion);
         RenderVolumeRow("SFX Volume", volume.sfxVolume, volume.sfxPass == 3, volume.sfxSuggestion);
+    }
 
-
-        // Add some space between each volume entry for clarity
+    // Helper method for rendering rows with aligned labels and values
+    private void RenderLabeledVolumeRow(string label, string value)
+    {
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(30); // Indent for better alignment
+        EditorGUILayout.LabelField(label, boldnormal, GUILayout.Width(150)); // Fixed width for the label
+        EditorGUILayout.LabelField(value, normal); // Value adjusts dynamically
+        EditorGUILayout.EndHorizontal();
         EditorGUILayout.Space(5);
 
-
-        // End of vertical layout
-        EditorGUILayout.EndVertical();
     }
+
 
     private void RenderVolumeRow(string label, float volumeLevel, bool isPass, string suggestion)
     {
 
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label, GUILayout.Width(100));
+        GUILayout.Space(30);
+        EditorGUILayout.LabelField($"{label}: ", boldnormal, GUILayout.Width(150));
         GUIStyle style = isPass ? passStyle : failStyle;
         EditorGUILayout.LabelField($"{volumeLevel} dB", style);
         EditorGUILayout.EndHorizontal();
@@ -145,9 +164,10 @@ public class VolumeChecker
         {
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(50); // Indent the suggestion for alignment
-            EditorGUILayout.LabelField(suggestion, cyanStyle, GUILayout.Width(500));
+            EditorGUILayout.LabelField(suggestion, cyanStyle);
             EditorGUILayout.EndHorizontal();
         }
+        EditorGUILayout.Space(5);
     }
 
     private void CheckVolumeLevels()
@@ -235,21 +255,47 @@ public class VolumeChecker
     {
         failStyle = new GUIStyle(EditorStyles.boldLabel)
         {
-            fontSize = 12,
+            fontSize = 14,
             wordWrap = true,
             normal = { textColor = Color.red },
         };
         passStyle = new GUIStyle(EditorStyles.boldLabel)
         {
-            fontSize = 12,
+            fontSize = 14,
             wordWrap = true,
             normal = { textColor = Color.green },
         };
         cyanStyle = new GUIStyle(EditorStyles.boldLabel)
         {
-            fontSize = 12,
+            fontSize = 14,
             wordWrap = false,
             normal = { textColor = Color.cyan },
         };
+        header1 = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 18,
+            wordWrap = true,
+        };
+        header2 = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 16
+        };
+        normal = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 14
+        };
+        boldnormal = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 14
+        };
+        noticeStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 14,
+            normal = { textColor = Color.yellow },
+            hover = { textColor = Color.yellow },
+            fontStyle = FontStyle.Italic,
+            richText = true 
+        };
+
     }
 }

@@ -19,9 +19,9 @@ public class demo : EditorWindow
         ColorblindChecker, // Comma added here
         BrightnessChecker, // Comma added here
         FlashingChecker, // Comma added here
-        SimpleLanguageChecker, // Comma added here
         FoVChecker, // Comma added here
         VolumeChecker, // Comma added here
+        SimpleLanguageChecker, // Comma added here
         TextToSpeech, // Comma added here
     }
 
@@ -161,14 +161,14 @@ private void OnGUI()
         case Tab.FlashingChecker:
             DrawTabFlash();
             break;
-        case Tab.SimpleLanguageChecker:
-            DrawTabLanguage();
-            break;
         case Tab.FoVChecker:
             DrawTabFoV();
             break;
         case Tab.VolumeChecker:
             DrawTabVolume();
+            break;
+        case Tab.SimpleLanguageChecker:
+            DrawTabLanguage();
             break;
         case Tab.TextToSpeech:
             DrawTabTTS();
@@ -244,24 +244,27 @@ private void OnGUI()
         GUILayout.Label("To get the best results from our plugin, follow these steps to ensure optimal functionality and accurate information capture for your game scene:", headerParagraphInstruct);
         GUILayout.Space(5);
 
+        GUILayout.Label("1. Start by playing the game", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Space(5);
+
         GUILayout.BeginHorizontal();
-        GUILayout.Label("1. ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
-        GUILayout.Label("Start by playing the game", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("2. Pause the game ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("when you reach a specific scene you’d like to analyze.", normalParagraphInstruct, GUILayout.ExpandWidth(false));
         GUILayout.EndHorizontal();
         GUILayout.Space(5);
 
         GUILayout.BeginHorizontal();
-        GUILayout.Label("2. ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
-        GUILayout.Label("Pause the game", boldParagraphInstruct, GUILayout.ExpandWidth(false));
-        GUILayout.Label("when you reach the specific scene you’d like to analyze.", normalParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("3. Close and reopen this window ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("to refresh the plugin and ensure all data is accurately loaded.", normalParagraphInstruct, GUILayout.ExpandWidth(false));
         GUILayout.EndHorizontal();
         GUILayout.Space(5);
 
         GUILayout.BeginHorizontal();
-        GUILayout.Label("3. With the scene paused, ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
-        GUILayout.Label("use and explore the plugin’s features", boldParagraphInstruct, GUILayout.ExpandWidth(false));
+        GUILayout.Label("4. Use and explore the plugin’s features ", boldParagraphInstruct, GUILayout.ExpandWidth(false));
         GUILayout.Label("to gather and review detailed information for this scene.", normalParagraphInstruct, GUILayout.ExpandWidth(false));
         GUILayout.EndHorizontal();
+
+
         GUILayout.Space(40);
 
         GUILayout.Label("Our plugin includes the following features to help make your application more accessible:", boldParagraphInstruct);
@@ -273,9 +276,9 @@ private void OnGUI()
         DrawFeature("3. Colorblind Simulator", "      View your application as it would appear to colorblind users.", featureHeadingStyle, featureStyle);
         DrawFeature("4. Brightness Checker", "      Analyze screen brightness levels for visibility.", featureHeadingStyle, featureStyle);
         DrawFeature("5. Flashing Check", "      Detect potentially harmful flashing elements.", featureHeadingStyle, featureStyle);
-        DrawFeature("6. Language Checker", "      Assess text for simplicity and clarity.", featureHeadingStyle, featureStyle);
-        DrawFeature("7. Field of View (FoV) Checker", "      Measure visible areas in a 3D scene.", featureHeadingStyle, featureStyle);
-        DrawFeature("8. Volume Checker", "      Verify volume levels for user comfort.", featureHeadingStyle, featureStyle);
+        DrawFeature("6. Field of View (FoV) Checker", "      Measure visible areas in a 3D scene.", featureHeadingStyle, featureStyle);
+        DrawFeature("7. Volume Checker", "      Verify volume levels for user comfort.", featureHeadingStyle, featureStyle);
+        DrawFeature("8. Language Checker", "      Assess text for simplicity and clarity.", featureHeadingStyle, featureStyle);
         DrawFeature("9. Text-To-Speech (TTS)", "      Integrate audio feedback using Amazon Polly.", featureHeadingStyle, featureStyle);
 
         // End the scroll view
@@ -295,10 +298,9 @@ private void OnGUI()
     private void DrawTabColorblind() => simulator.OnGUI();
     private void DrawTabBrightness() => brightnessChecker.OnGUI();
     private void DrawTabFlash() => flashingCheck.OnGUI();
-    private void DrawTabLanguage() => simpleLanguageChecker.OnGUI();
     private void DrawTabFoV() => fovChecker.OnGUI();
     private void DrawTabVolume() => volumeChecker.OnGUI();
-
+    private void DrawTabLanguage() => simpleLanguageChecker.OnGUI();
     private void DrawTabTTS()
     {
         GUILayout.Label("How to Use Text-To-Speech (TTS)", EditorStyles.boldLabel);

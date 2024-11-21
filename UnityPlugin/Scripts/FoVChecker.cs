@@ -5,8 +5,16 @@ public class FovChecker
 {
     private Camera mainCamera;
     
-    private string[] gameTypes = { "General", "FPS", "Third Person", "Racing/Simulation", "VR" };
+    private string[] gameTypes = { "General", "FPS", "Third Person", "Racing and Simulation", "VR" };
     private int selectedGameType = 0;
+    private string gameTypeDetails  = "General games include a wide range of genres, offering flexible gameplay experiences without strict visual requirements.";
+    private float adjustedFoV;
+
+    private float initialFoV; // To store the original FoV
+    private bool isFoVInitialized = false; // To ensure the initial FoV is set only once
+
+    private bool isResultInitial = false;
+    private bool initialResult;
 
     private GUIStyle header1Style;
     private GUIStyle header2Style;
@@ -29,7 +37,7 @@ public class FovChecker
 
     public void onEnable()
     {
-        fovValue = mainCamera.fieldOfView;
+        initialFoV = mainCamera.fieldOfView;
         CheckFoVForGameType();
     }
 
@@ -38,31 +46,27 @@ public class FovChecker
     {
         InitializeGUIStyles();
 
-        // Section 1: FoV Check
-        GUILayout.Label("FoV Check", header1Style);
-        GUILayout.Space(5);
-
-        GUILayout.Label("Select Game Type", header2Style);
-        int newSelectedGameType = EditorGUILayout.Popup("Game Type", selectedGameType, gameTypes);
-
-        GUILayout.Space(10);
-
-        // If the game type selection has changed, update it
-        if (newSelectedGameType != selectedGameType)
-        {
-            selectedGameType = newSelectedGameType;
-            // Force a GUI refresh on game type change
-            GUI.changed = true;
-        }
-
+        // Check for camera
         if (Is3DGame())
         {
             if (mainCamera != null)
             {
-                fovValue = mainCamera.fieldOfView;
+                // Initialize the default FoV only once
+                if (!isFoVInitialized)
+                {
+                    initialFoV = mainCamera.fieldOfView; // Save the initial value
+                    fovValue = initialFoV;
+                    isFoVInitialized = true;
+                }
 
-                // Show current FoV and check against game type thresholds
+                // Validate the default/current FoV against game type thresholds
                 CheckFoVForGameType();
+
+                if (!isResultInitial)
+                {
+                    initialResult = isFail;
+                    isResultInitial = true;
+                }
             }
             else
             {
@@ -74,109 +78,147 @@ public class FovChecker
             GUILayout.Label("FoV check is only for 3D engines.");
         }
 
-        GUILayout.Space(20); // Add some space between the sections
+        // Section 1: FoV Check
+        GUILayout.Label("FoV Check (Field of View)", header1Style);
+        GUILayout.Space(10);
 
+        // Game type selection
+        GUILayout.Label("Select Game Type", header2Style);
+        int newSelectedGameType = EditorGUILayout.Popup("Game Type", selectedGameType, gameTypes);
+        GUILayout.Space(10);
+
+        // Description of the game type
+
+        GUILayout.Label("Description: ", header2Style);
+        GUILayout.Label("   " + gameTypeDetails, normalStyle);
+        GUILayout.Space(10);
+        GUILayout.Label("Criteria: ", header2Style);
+        GUILayout.Label("   " + description, normalStyle);
+        GUILayout.Space(15);
+
+        // Show the default/current FoV of the scene
+        GUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Default/Current FoV:", header2Style, GUILayout.Width(180));
+        EditorGUILayout.LabelField($"{fovValue}", initialResult ? failStyle : passStyle);
+        GUILayout.EndHorizontal();
+
+        // Show the result of the FoV check
+        GUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("FoV Check:", header2Style, GUILayout.Width(180));
+        EditorGUILayout.LabelField(result, initialResult ? failStyle : passStyle); // Result based on saved state
+        GUILayout.EndHorizontal();
+
+        // Update game type selection if changed
+        if (newSelectedGameType != selectedGameType)
+        {
+            selectedGameType = newSelectedGameType;
+
+            // re-initialize isFoVInitialized = false;
+            isResultInitial = false;
+
+            // Revalidate the default/current FoV against new thresholds
+            CheckFoVForGameType();
+
+            initialResult = isFail;
+            isResultInitial = true;
+
+            // Force GUI refresh for the check section
+            GUI.changed = true;
+        }
+
+        GUILayout.Space(20); // Add space between sections
+           
+        /*
         // Section 2: FoV Simulation
         GUILayout.Label("FoV Simulation", header1Style);
         GUILayout.Space(5);
 
-        // Instruction for FoV Simulation
+
+        
+        // Instruction for simulation
         GUILayout.Label("Note: The FoV Simulation is only usable after the game scene is paused during play mode.", normalStyle);
         GUILayout.Space(10);
+        
+        // Adjust the simulation FoV without affecting the default/current FoV
+        EditorGUILayout.Slider("Adjust FoV", mainCamera.fieldOfView, 1f, 180f);
 
-        if (mainCamera != null)
-        {
-            // Display current FoV value
-            GUILayout.Label($"Current FoV: {mainCamera.fieldOfView}", normalStyle);
-
-            // Allow the user to adjust the FoV for testing purposes
-            float newFoV = EditorGUILayout.Slider("Adjust FoV", mainCamera.fieldOfView, 1f, 179f);
-
-            // Apply the new FoV if it's different from the current value
-            if (!Mathf.Approximately(newFoV, mainCamera.fieldOfView))
-            {
-                mainCamera.fieldOfView = newFoV;
-                // Force a GUI refresh on FoV change
-                GUI.changed = true;
-                Debug.Log($"FoV changed to: {mainCamera.fieldOfView}");
-            }
-        }
-        else
-        {
-            GUILayout.Label("No camera found. Please ensure a main camera is active in the scene.");
-        }
-
-        GUILayout.Space(10);
-        GUILayout.Label(description, normalStyle);
-        GUILayout.Space(10);
-        // Display FoV result
         GUILayout.BeginHorizontal();
-        GUILayout.Label("Current FoV:", header2Style, GUILayout.Width(120));
-        GUILayout.Label($"{fovValue}", isFail ? failStyle : passStyle);
+        GUILayout.Label("Adjusted FoV:", header2Style, GUILayout.Width(120));
+        GUILayout.Label($"{mainCamera.fieldOfView}", normalStyle);
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("Check:", header2Style, GUILayout.Width(120));
         GUILayout.Label(result, isFail ? failStyle : passStyle);
         GUILayout.EndHorizontal();
+        */
     }
+
+
 
     // Method to check FoV based on the selected game type and provide results
     private void CheckFoVForGameType()
     {
         // Reset isFail at the start of the method to recheck the conditions
         isFail = false;
-
+        result = "Pass";
         
 
         switch (gameTypes[selectedGameType])
         {
             case "FPS":
-                if (fovValue < 90f || fovValue > 110f)
+                if (initialFoV < 90f || initialFoV > 110f)
                 {
                     result = "Fail";
                     isFail = true;
                 }
                 gameType = "FPS";
-                description = "In FPS games, FoV is typically between 90° to 110° for optimal player awareness and comfort.";
+                description = "In <b>FPS games</b>, FoV is typically between <b>90° to 110°</b> for optimal player awareness and comfort.";
+                gameTypeDetails = "<b>FPS (First-Person Shooter) games</b> are action games where players view the game world from the protagonist's perspective, often focused on precision and reaction speed.";
                 break;
             case "Third Person":
-                if (fovValue < 60f || fovValue > 80f)
+                if (initialFoV < 60f || initialFoV > 80f)
                 {
                     result = "Fail";
                     isFail = true;
                 }
                 gameType = "Third Person";
-                description = "Third-person games often use a FoV between 60° to 80°, providing balance between character visibility and spatial awareness.";
+                description = "<b>Third-person games</b> often use a FoV between <b>60° to 80°</b>, providing balance between character visibility and spatial awareness.";
+                gameTypeDetails = "<b>Third-person games</b> allow players to see their character on the screen, offering a broader view of the environment and character movement.";
                 break;
-            case "Racing/Simulation":
-                if (fovValue < 75f || fovValue > 120f)
+            case "Racing and Simulation":
+                if (initialFoV < 75f || initialFoV > 120f)
                 {
                     result = "Fail";
                     isFail = true;
                 }
                 gameType = "Racing/Simulation";
-                description = "For racing or simulation games, FoV ranges from 75° to 120° to simulate peripheral vision and immersion.";
+                description = "For <b>racing or simulation games</b>, FoV ranges from <B>75° to 120°</b> to simulate peripheral vision and immersion.";
+                gameTypeDetails = "<b>Racing/Simulation games</b> focus on realism and accuracy, often replicating real-world scenarios like driving or piloting.";
                 break;
             case "VR":
-                if (fovValue < 90f || fovValue > 120f)
+                if (initialFoV < 90f || initialFoV > 120f)
                 {
                     result = "Fail";
                     isFail = true;
                 }
-                description = "In VR games, a FoV between 90° and 120° provides a realistic and comfortable experience.";
+                gameType = "VR";
+                description = "In <b>VR games</b>, a FoV between <b>90° and 120°</b> provides a realistic and comfortable experience.";
+                gameTypeDetails = "<b>VR (Virtual Reality)</b> games immerse players in a fully 3D virtual environment, using specialized hardware like VR headsets for a realistic experience.";
                 break;
             case "General":
-                if (fovValue < 60f || fovValue > 120f)
+                if (initialFoV < 60f ||   initialFoV > 120f)
                 {
                     result = "Fail";
                     isFail = true;
                 }
                 gameType = "General";
-                description = "For every game, extreme FoV ranges outside 60° to 120° are typically uncomfortable and can lead to visual distortion.";
+                description = "For <b> general game </b>, the recommended FoV is typically between <b>60° and 120°</b>.This range is a general guideline that ensures player comfort and minimizes visual distortion, making it suitable for games across all genres.";
+                gameTypeDetails = "<b>General games</b> include a wide range of genres, offering flexible gameplay experiences without strict visual requirements.";
                 break;
         }
-        
+    
+
     }
 
     // Method to determine if the game is running in a 3D environment
@@ -195,24 +237,25 @@ public class FovChecker
         header2Style = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 16,
-            wordWrap = true,
         };
-        normalStyle = new GUIStyle(EditorStyles.label)
+        normalStyle = new GUIStyle(GUI.skin.label)
         {
             fontSize = 14,
             wordWrap = true,
+            richText = true,
         };
         failStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 16,
-            wordWrap = true,
             normal = { textColor = Color.red },
+            hover = { textColor = Color.red },
         };
         passStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 16,
             wordWrap = true,
             normal = { textColor = Color.green },
+            hover = { textColor = Color.green },
         };
     }
 }
