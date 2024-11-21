@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEngine.Networking;
 using System.Collections;
 using Unity.EditorCoroutines.Editor;
+using UnityEngine.Rendering;
 
 public class SimpleLanguageChecker
 {
@@ -10,24 +11,40 @@ public class SimpleLanguageChecker
     private string feedback = "";
     private string apiKey = "AIzaSyD0MFUzXp82G3_PtmJYomDzxpawIGrw1JA"; // Set your API key here
     private EditorWindow parentWindow;
+    private GUIStyle header1Style;
+    private GUIStyle header2Style;
+    private GUIStyle normalStyle;
+    private GUIStyle header3Style;
 
-   
 
     public void OnGUI()
     {
-        GUILayout.Label("Enter Text to Simplify", EditorStyles.boldLabel);
-        inputText = EditorGUILayout.TextArea(inputText, GUILayout.Height(200));
+        InitializeGUIStyles();
+        GUILayout.Label("Simplify Language", header1Style);
+        GUILayout.Space(15);
+
+        GUILayout.Label("Objective:", header2Style);
+        GUILayout.Space(5);
+        GUILayout.Label("This feature leverages AI to evaluate the simplicity of game instructions, ensuring they are clear and easy to understand, " +
+            "particularly for individuals with cognitive impairments.", normalStyle);
+        GUILayout.Space(15);
+
+        GUILayout.Label("Enter Text to Simplify", header2Style);
+        GUILayout.Space(5);
+
+        inputText = EditorGUILayout.TextArea(inputText, GUILayout.Height(100));
+        GUILayout.Space(5);
 
         if (GUILayout.Button("Simplify"))
         {
             // Call the method to simplify text using Gemini API
             SimplifyText(inputText);
         }
-
+        GUILayout.Space(15);
         if (!string.IsNullOrEmpty(feedback))
         {
-            GUILayout.Label("Simplified Text:", EditorStyles.boldLabel);
-            GUILayout.Label(feedback, EditorStyles.wordWrappedLabel);
+            GUILayout.Label("Simplified Text:", header2Style);
+            GUILayout.Label(feedback, normalStyle);
         }
     }
 
@@ -37,6 +54,25 @@ public class SimpleLanguageChecker
         EditorCoroutineUtility.StartCoroutine(SendTextToGemini(text), this);
     }
 
+
+    private void InitializeGUIStyles()
+    {
+        header1Style = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 18,
+            wordWrap = true,
+        };
+        header2Style = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontSize = 16,
+        };
+        normalStyle = new GUIStyle(EditorStyles.label)
+        {
+            fontSize = 14,
+            wordWrap = true,    
+        };
+
+    }
     private IEnumerator SendTextToGemini(string text)
     {
         string apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={apiKey}";
