@@ -311,11 +311,13 @@ private void OnGUI()
         GUILayout.Space(5);
         GUILayout.Label("3. Create a button in your Unity project.", EditorStyles.wordWrappedLabel);
         GUILayout.Space(5);
-        GUILayout.Label("4. Click on the button -> Click 'Add Component' in the Inspector -> Choose 'HoverDetector'.", EditorStyles.wordWrappedLabel);
+        GUILayout.Label("4. Click on the button -> Click 'Add Component' in the Inspector -> Choose 'HoverDetector' and 'TextToSpeech'. Drag 'Game Object' from 'Hierarchy' tab to 'Audio Source' in 'Text To Speech' script.", EditorStyles.wordWrappedLabel);
         GUILayout.Space(5);
-        GUILayout.Label("5. Add a label in the 'Label To Speak' input field that you want a voiceover when the mouse hovers over it.", EditorStyles.wordWrappedLabel);
+        GUILayout.Label("5. Click 'Add Component' again and choose 'TextToSpeech'. Drag 'Game Object' from 'Hierarchy' tab to 'Audio Source' in 'Text To Speech' script.", EditorStyles.wordWrappedLabel);
         GUILayout.Space(5);
-        GUILayout.Label("6. Start the game and enjoy the voiceover functionality.", EditorStyles.wordWrappedLabel);
+        GUILayout.Label("6. Add a label in the 'Label To Speak' input field that you want a voiceover when the mouse hovers over it.", EditorStyles.wordWrappedLabel);
+        GUILayout.Space(5);
+        GUILayout.Label("7. Start the game and enjoy the voiceover functionality.", EditorStyles.wordWrappedLabel);
     }
     private void Report()
     {
