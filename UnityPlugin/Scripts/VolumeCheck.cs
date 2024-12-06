@@ -73,6 +73,7 @@ public class VolumeChecker
     private GUIStyle header2;
     private GUIStyle normal;
     private GUIStyle boldnormal;
+    private GUIStyle boldnormal1;
     private GUIStyle noticeStyle;
 
     public VolumeProperties volume;
@@ -98,8 +99,12 @@ public class VolumeChecker
         CheckVolumeLevels();
 
     }
+
+    private Vector2 scrollPosition = Vector2.zero;
     public void OnGUI()
     {
+        // Start the scroll view
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
         InitializeGUIStyles();
 
         // Title
@@ -110,9 +115,58 @@ public class VolumeChecker
         // Instruction on allowing this feature to work properly
         EditorGUILayout.LabelField("<b>Important Notice!!</b>", noticeStyle);
         EditorGUILayout.LabelField("   Ensure there is an AudioMixer object named <b>'MainMixer'</b> that includes volume controls for Master, Music, Voice, and SFX.", noticeStyle);
+        EditorGUILayout.Space(10);
+
+        // Informational Section about dB and importance
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.LabelField("What is dB (Decibels)?", header2);
+        EditorGUILayout.BeginHorizontal();
+
+        GUILayout.Label("   - Decibels (dB)", boldnormal, GUILayout.ExpandWidth(false));
+        EditorGUILayout.LabelField("are a logarithmic unit used to measure sound intensity.", normal);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("   - A lower dB", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("level means quieter sounds while", normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("higher dB", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("levels represent louder sounds.", normal, GUILayout.ExpandWidth(false));
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("   - It is crucial to", normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("balance audio levels", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("to avoid", normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("distortion listener fatigue, or inaudible elements", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("in your game or application.", normal, GUILayout.ExpandWidth(false));
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.EndVertical();
+        GUILayout.Space(10);
+
+        EditorGUILayout.LabelField("Why is Volume Monitoring Important?", header2);
+        EditorGUILayout.BeginVertical();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   - Proper volume levels ensure", normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("a consistent and enjoyable audio experience", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("for players.", normal, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   - Maintaining recommended loudness levels",normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("prevents clipping (audio distortion due to high volume)", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("and", normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("ensures clarity for speech, music and sound effects.", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("   - Balanced audio contributes to", normal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("better immersion and accessibility", boldnormal, GUILayout.ExpandWidth(false));
+        GUILayout.Label("in your game.", normal, GUILayout.ExpandWidth(false));
+        GUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
+
 
         // Spacing for better readability
-        EditorGUILayout.Space(10);
+        EditorGUILayout.Space(20);
 
         // Recommended levels section
         EditorGUILayout.LabelField("Recommended Loudness Levels", header2);
@@ -135,7 +189,12 @@ public class VolumeChecker
         RenderVolumeRow("Voice Volume", volume.voiceVolume, volume.voicePass == 3, volume.voiceSuggestion);
         RenderVolumeRow("Music Volume", volume.musicVolume, volume.musicPass == 3, volume.musicSuggestion);
         RenderVolumeRow("SFX Volume", volume.sfxVolume, volume.sfxPass == 3, volume.sfxSuggestion);
+        EditorGUILayout.Space(20);
+
+        // End the scroll view
+        GUILayout.EndScrollView();
     }
+
 
     // Helper method for rendering rows with aligned labels and values
     private void RenderLabeledVolumeRow(string label, string value)
@@ -278,15 +337,18 @@ public class VolumeChecker
         };
         header2 = new GUIStyle(EditorStyles.boldLabel)
         {
-            fontSize = 16
+            fontSize = 16,
+            wordWrap = true
         };
         normal = new GUIStyle(EditorStyles.label)
         {
-            fontSize = 14
+            fontSize = 15
         };
         boldnormal = new GUIStyle(EditorStyles.boldLabel)
         {
-            fontSize = 14
+            fontSize = 15,
+            wordWrap  = false,
+            richText = true
         };
         noticeStyle = new GUIStyle(EditorStyles.boldLabel)
         {

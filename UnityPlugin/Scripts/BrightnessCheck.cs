@@ -65,17 +65,20 @@ public class BrightnessChecker
             fontSize = 14,
             normal = { textColor = Color.green },
             wordWrap = true,
+            hover = { textColor = Color.green },
         };
         failStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 14,
             normal = { textColor = Color.red },
+            hover = { textColor = Color.red },
             wordWrap = true,
         };
         suggestionStyle = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 14,
-            normal = { textColor = Color.cyan }, 
+            normal = { textColor = Color.cyan },
+            hover = { textColor = Color.cyan },
             wordWrap = true,
         };
 
@@ -104,16 +107,17 @@ public class BrightnessChecker
         }
 
         InitializeGUIStyles();
-        GUIStyle style;
 
         // Start the scroll view
         scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
 
+        // Header
         GUILayout.Label("Brightness Checker", headerStyle);
-        GUILayout.Space(20);
+        GUILayout.Space(10);
 
         // Display brightness report and suggestion
-        if (brightnessReport > 0.1 && brightnessReport < 0.9)
+        GUIStyle style;
+        if (brightnessReport > 0.1 && brightnessReport < 0.7)
         {
             style = passStyle;
         }
@@ -136,7 +140,7 @@ public class BrightnessChecker
 
         // Brightness adjustment slider
         GUILayout.Label("Adjust Brightness Simulation", headerStyle);
-        GUILayout.Space(20);
+        GUILayout.Space(10);
         GUILayout.Label("Use slider below to see brightness change in the adjusted image", labelStyle);
         brightnessFactor = GUILayout.HorizontalSlider(brightnessFactor, 0.0f, 30.0f, sliderStyle, sliderThumbStyle);
         GUILayout.Space(20);
@@ -148,7 +152,7 @@ public class BrightnessChecker
         GUILayout.Label("Adjusted Image", subHeaderStyle);
         GUILayout.Box(adjustedTexture, GUILayout.Width(textureWidth), GUILayout.Height(textureHeight));
         float adjustedBrightness = CalculateAverageBrightness(adjustedTexture);
-        if (adjustedBrightness > 0.1 && adjustedBrightness < 0.9)
+        if (adjustedBrightness > 0.1 && adjustedBrightness < 0.7)
         {
             style = passStyle;
         }
@@ -161,13 +165,15 @@ public class BrightnessChecker
         GUILayout.Label("Adjusted Brightness:", labelStyle, GUILayout.ExpandWidth(false));
         GUILayout.Label($"{adjustedBrightness.ToString("F2")}", style);
         GUILayout.EndHorizontal();
+        // Force GUI refresh for the check section
+        GUI.changed = true;
         PrintBrightnessSuggestion(adjustedBrightness);
         GUILayout.Space(20);
-
-
+        
         // End the scroll view
         GUILayout.EndScrollView();
     }
+
 
 
     private float CalculateAverageBrightness(Texture2D texture)
@@ -189,7 +195,7 @@ public class BrightnessChecker
     {
         string suggestion;
 
-        if (averageBrightness < 0.2f)
+        if (averageBrightness < 0.1f)
         {
             suggestion = "The game is very dark. Consider increasing the brightness for better visibility.";
         }
@@ -201,7 +207,7 @@ public class BrightnessChecker
         {
             suggestion = "The brightness level is well-balanced. It is generally suitable for most games.";
         }
-        else if (averageBrightness <= 0.8f)
+        else if (averageBrightness < 0.7f)
         {
             suggestion = "The game is quite bright. This is good for vibrant and cheerful settings, but ensure it is not too glaring for extended play.";
         }
@@ -210,8 +216,24 @@ public class BrightnessChecker
             suggestion = "The game is very bright. Consider reducing the brightness to avoid potential eye strain for players.";
         }
 
-        GUILayout.Label($"Suggestion: {suggestion}", suggestionStyle);
+        if (averageBrightness < 0.1f && averageBrightness > 0.7f)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Description: ", labelStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label(suggestion, suggestionStyle);
+            GUILayout.EndHorizontal();
+        }
+        else
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Description: ", labelStyle, GUILayout.ExpandWidth(false));
+            GUILayout.Label(suggestion, suggestionStyle);
+            GUILayout.EndHorizontal();
+        }
+        // Force GUI refresh for the check section
+        GUI.changed = true;
     }
+        
 
     private void CaptureScreen()
     {

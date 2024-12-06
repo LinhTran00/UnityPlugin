@@ -3,76 +3,126 @@ using UnityEditor;
 using UnityEngine.Networking;
 using System.Collections;
 using Unity.EditorCoroutines.Editor;
-using UnityEngine.Rendering;
 
 public class SimpleLanguageChecker
 {
     private string inputText = "";
     private string feedback = "";
-    private string apiKey = "AIzaSyD0MFUzXp82G3_PtmJYomDzxpawIGrw1JA"; // Set your API key here
-    private EditorWindow parentWindow;
+    private string feedbackConvert = "";
+    private string apiKey = "AIzaSyDxcTyrAdgUwd-NZuIFpRHBA-B-5c6Ebc0"; // Replace with your API key safely
+    private GUIStyle normal;
+    private GUIStyle normalBold;
     private GUIStyle header1Style;
     private GUIStyle header2Style;
     private GUIStyle normalStyle;
     private GUIStyle header3Style;
-
-
+    private GUIStyle textAreaStyle;
+    private GUIStyle buttonStyle;
+    private GUIStyle notify;
+    private Vector2 scrollPosition = Vector2.zero;
     public void OnGUI()
     {
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition, false, true);
+
         InitializeGUIStyles();
+
         GUILayout.Label("Simplify Language", header1Style);
         GUILayout.Space(15);
 
-        GUILayout.Label("Objective:", header2Style);
-        GUILayout.Space(5);
+        GUILayout.Label("Objective:", normalBold);
         GUILayout.Label("This feature leverages AI to evaluate the simplicity of game instructions, ensuring they are clear and easy to understand, " +
             "particularly for individuals with cognitive impairments.", normalStyle);
         GUILayout.Space(15);
 
-        GUILayout.Label("Enter Text to Simplify", header2Style);
-        GUILayout.Space(5);
+        GUILayout.Label("Enter Text to Simplify:", normalBold);
 
-        inputText = EditorGUILayout.TextArea(inputText, GUILayout.Height(100));
-        GUILayout.Space(5);
+        // Input text area
+        inputText = EditorGUILayout.TextArea(inputText, textAreaStyle, GUILayout.Height(200));
 
-        if (GUILayout.Button("Simplify"))
+        // Simplify button
+        if (GUILayout.Button("Simplify", buttonStyle))
         {
-            // Call the method to simplify text using Gemini API
             SimplifyText(inputText);
         }
         GUILayout.Space(15);
+        
+        // Feedback area
         if (!string.IsNullOrEmpty(feedback))
         {
-            GUILayout.Label("Simplified Text:", header2Style);
-            GUILayout.Label(feedback, normalStyle);
+            GUILayout.Label("Simplified Text:", normalBold);
+            GUILayout.Space(5);
+            // Convert Markdown to Rich Text
+            feedbackConvert = ConvertMarkdownToRichText(feedback);
+            GUILayout.Label("**The portion below is AI generated.**", notify);
+            GUILayout.Space(10);
+            GUILayout.Label(feedbackConvert, normal);
         }
+        GUILayout.EndScrollView();
     }
-
-    private void SimplifyText(string text)
-    {
-        // Start coroutine to call Gemini API for text simplification
-        EditorCoroutineUtility.StartCoroutine(SendTextToGemini(text), this);
-    }
-
 
     private void InitializeGUIStyles()
     {
+        normal = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = 14,
+            wordWrap = true,
+            richText = true
+        };
+        normalBold = new(EditorStyles.boldLabel)
+        {
+            fontSize = 16,
+            wordWrap = true
+        };
         header1Style = new GUIStyle(EditorStyles.boldLabel)
         {
             fontSize = 18,
             wordWrap = true,
         };
-        header2Style = new GUIStyle(EditorStyles.boldLabel)
-        {
-            fontSize = 16,
-        };
+
         normalStyle = new GUIStyle(EditorStyles.label)
         {
             fontSize = 14,
-            wordWrap = true,    
+            wordWrap = true,
         };
-
+        textAreaStyle = new GUIStyle(EditorStyles.textArea)
+        {
+            fontSize = 14, // Increase font size
+            wordWrap = true, // Wrap long lines
+            padding = new RectOffset(10, 10, 10, 10) // Add padding around text
+        };
+        buttonStyle = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 20, // Set the font size
+            fontStyle = FontStyle.Bold, // Optional: Make the font bold
+            alignment = TextAnchor.MiddleCenter, // Optional: Center align the text
+        };
+        notify = new GUIStyle(EditorStyles.boldLabel)
+        {
+            fontStyle = FontStyle.Italic,
+            fontSize = 12,
+            normal = {textColor = Color.yellow},
+            hover = {textColor = Color.yellow},  
+        };
     }
+
+    private string ConvertMarkdownToRichText(string markdownText)
+    {
+        // Replace Markdown-style **text** with Unity Rich Text <b>text</b>
+        bool isBold = false;
+        return System.Text.RegularExpressions.Regex.Replace(markdownText, @"\*\*", match =>
+        {
+            isBold = !isBold; // Toggle between opening and closing tags
+            return isBold ? "<b>" : "</b>";
+        });
+    }
+
+    private void SimplifyText(string text)
+    {
+        
+        // Start coroutine to simplify text using Gemini API
+        EditorCoroutineUtility.StartCoroutine(SendTextToGemini(text), this);
+    }
+
     private IEnumerator SendTextToGemini(string text)
     {
         string apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={apiKey}";
@@ -85,7 +135,7 @@ public class SimpleLanguageChecker
                 {
                     parts = new[]
                     {
-                        new Part { text = "Simplify this text: " + text }
+                        new Part { text = "Simplify this game instruction while maintaining clarity and context. Also provide 3 options with these categories - concise and direct, descriptive, playful and engaging - to choose from: " + text }
                     }
                 }
             }
@@ -104,7 +154,9 @@ public class SimpleLanguageChecker
         if (request.result == UnityWebRequest.Result.Success)
         {
             Debug.Log("Response: " + request.downloadHandler.text);
+
             var geminiResponse = JsonUtility.FromJson<GeminiResponse>(request.downloadHandler.text);
+
             if (geminiResponse.candidates != null && geminiResponse.candidates.Length > 0)
             {
                 feedback = geminiResponse.candidates[0].content.parts[0].text.Trim();
@@ -120,12 +172,13 @@ public class SimpleLanguageChecker
             Debug.LogError("Request error: " + request.error);
         }
 
-        // Refresh the window to display the result
-        parentWindow.Repaint();
+        // Request repaint for the focused editor window
+        EditorWindow.focusedWindow.Repaint();
+        GUI.changed = true;
     }
 }
 
-// Helper classes to parse Gemini API response
+// Helper classes for Gemini API request and response
 [System.Serializable]
 public class RequestData
 {
